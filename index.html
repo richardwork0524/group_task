@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8"/>
-<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover"/>
 <meta name="theme-color" content="#007AFF"/>
 <meta name="apple-mobile-web-app-capable" content="yes"/>
 <meta name="apple-mobile-web-app-status-bar-style" content="default"/>
@@ -108,6 +108,8 @@ body{font-family:-apple-system,'SF Pro Display','Helvetica Neue',sans-serif;colo
 .popup-task-due.over{color:var(--danger);font-weight:600;}
 .popup-task-due.soon{color:var(--warn);}
 .popup-actions{display:flex;gap:10px;padding:16px 20px 0;}
+.popup-sec{font-size:11px;font-weight:700;color:var(--t2);text-transform:uppercase;letter-spacing:.04em;padding:10px 20px 4px;}
+.popup-dept-hdr{font-size:12px;font-weight:600;padding:8px 20px 2px;color:var(--t1);}
 .btn-fill{flex:1;padding:12px;border:none;background:var(--p);border-radius:var(--r-sm);font-size:15px;font-weight:600;color:#fff;cursor:pointer;text-align:center;}
 .btn-outline{flex:1;padding:12px;border:1.5px solid var(--p);border-radius:var(--r-sm);font-size:15px;font-weight:600;color:var(--p);background:none;cursor:pointer;text-align:center;}
 .btn-ghost{padding:12px 16px;border:1.5px solid var(--border);border-radius:var(--r-sm);font-size:15px;font-weight:600;color:var(--t2);background:none;cursor:pointer;}
@@ -231,6 +233,16 @@ textarea.f-inp{resize:none;min-height:72px;}
 .det-meta-l{font-size:11px;font-weight:700;color:var(--t3);text-transform:uppercase;letter-spacing:.05em;margin-bottom:2px;}
 .det-meta-v{font-size:14px;font-weight:600;}
 .det-btns{display:flex;gap:8px;}
+.det-actions{display:flex;gap:8px;margin-bottom:14px;}
+.det-act-btn{flex:1;display:flex;align-items:center;justify-content:center;gap:6px;padding:10px;border:1.5px solid var(--border);border-radius:var(--r-sm);font-size:13px;font-weight:500;color:var(--t2);cursor:pointer;background:var(--surface2);}
+.det-act-btn:active{background:var(--border);}
+.proj-ver{padding:10px;background:var(--surface2);border-radius:var(--r-sm);margin-bottom:8px;border-left:3px solid var(--p);}
+.proj-ver-hdr{display:flex;align-items:center;justify-content:space-between;}
+.proj-ver-name{font-size:13px;font-weight:600;}
+.proj-ver-date{font-size:11px;color:var(--t3);}
+.proj-ver-desc{font-size:12px;color:var(--t2);margin-top:4px;line-height:1.5;}
+.proj-task-row{display:flex;align-items:center;gap:8px;padding:8px 0;border-bottom:1px solid var(--border);cursor:pointer;}
+.proj-task-row:last-child{border-bottom:none;}
 .status-pill{font-size:12px;font-weight:600;padding:4px 10px;border-radius:20px;}
 .sp-over{background:#FFE5E5;color:var(--danger);}.sp-prog{background:#E5EEFF;color:var(--p);}
 .sp-done{background:#E5F9EC;color:var(--success);}.sp-todo{background:var(--surface2);color:var(--t2);}
@@ -370,10 +382,10 @@ textarea.f-inp{resize:none;min-height:72px;}
   <!-- HOME -->
   <div id="v-home" class="view on">
     <div class="sum-row" id="sum-row">
-      <div class="sum-c"><div class="sum-v c-d" id="s-overdue">—</div><div class="sum-l">Overdue</div></div>
-      <div class="sum-c"><div class="sum-v c-w" id="s-week">—</div><div class="sum-l">This Week</div></div>
-      <div class="sum-c"><div class="sum-v c-p" id="s-prog">—</div><div class="sum-l">In Progress</div></div>
-      <div class="sum-c"><div class="sum-v c-s" id="s-done">—</div><div class="sum-l">Done</div></div>
+      <div class="sum-c" onclick="openStatusPopup('overdue')" style="cursor:pointer;"><div class="sum-v c-d" id="s-overdue">—</div><div class="sum-l">Overdue</div></div>
+      <div class="sum-c" onclick="openStatusPopup('week')" style="cursor:pointer;"><div class="sum-v c-w" id="s-week">—</div><div class="sum-l">This Week</div></div>
+      <div class="sum-c" onclick="openStatusPopup('inprogress')" style="cursor:pointer;"><div class="sum-v c-p" id="s-prog">—</div><div class="sum-l">In Progress</div></div>
+      <div class="sum-c" onclick="openStatusPopup('done')" style="cursor:pointer;"><div class="sum-v c-s" id="s-done">—</div><div class="sum-l">Done</div></div>
     </div>
     <div class="sec">Company</div>
     <div class="co-grid" id="co-grid"></div>
@@ -494,16 +506,21 @@ textarea.f-inp{resize:none;min-height:72px;}
 
 </div><!-- /app -->
 
-<!-- COMPANY POPUP -->
+<!-- COMPANY / STATUS POPUP -->
 <div class="ov" id="co-popup-ov" onclick="if(event.target===this)closePopup()">
-  <div class="sheet-base">
+  <div class="sheet-base" style="max-height:85vh;display:flex;flex-direction:column;">
     <div class="handle"></div>
     <div class="popup-hdr">
       <div class="popup-title" id="popup-name"></div>
       <div class="popup-close" onclick="closePopup()"><span class="mi">close</span></div>
     </div>
     <div class="popup-meta" id="popup-meta"></div>
-    <div id="popup-tasks"></div>
+    <div id="popup-dept-filter" style="padding:0 20px 8px;display:none;">
+      <select class="tl-co-sel" id="popup-dept-sel" onchange="renderPopupTasks()" style="width:100%;font-size:13px;padding:8px 10px;">
+        <option value="">All Departments</option>
+      </select>
+    </div>
+    <div id="popup-tasks" style="flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch;"></div>
     <div class="popup-actions">
       <div class="btn-outline" onclick="closePopup()">Close</div>
       <div class="btn-fill" id="popup-view-btn">View All →</div>
@@ -599,6 +616,11 @@ textarea.f-inp{resize:none;min-height:72px;}
       </div>
       <!-- SUBTASKS -->
       <div class="sub-section" id="det-subtasks"></div>
+      <!-- Quick actions -->
+      <div class="det-actions">
+        <div class="det-act-btn" onclick="addToCalendar()"><span class="mi mi-sm">event</span> Calendar</div>
+        <div class="det-act-btn" onclick="addReminder()"><span class="mi mi-sm">notifications</span> Reminder</div>
+      </div>
       <div class="det-btns">
         <div class="btn-ghost-d" onclick="deleteTask()">Delete</div>
         <div class="btn-ghost" onclick="closeDet()">Close</div>
@@ -664,6 +686,44 @@ textarea.f-inp{resize:none;min-height:72px;}
     </div>
 
     <div class="set-footer">Task Tracker PWA v1.3<br/>Single-user · Offline-first</div>
+  </div>
+</div>
+
+<!-- PROJECT DETAIL -->
+<div class="ov" id="proj-ov" onclick="if(event.target===this)closeProjectDetail()">
+  <div class="det-sheet" style="max-height:90vh;">
+    <div class="handle"></div>
+    <div style="display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:4px;">
+      <div class="det-title" id="proj-title"></div>
+      <span class="mi" style="cursor:pointer;color:var(--t2)" onclick="closeProjectDetail()">close</span>
+    </div>
+    <div class="det-sub" id="proj-sub"></div>
+    <div id="proj-desc" class="det-notes" style="display:none;"></div>
+    <div class="det-meta-row" id="proj-meta"></div>
+
+    <!-- Edit fields -->
+    <div id="proj-edit-section" style="margin-bottom:14px;">
+      <div class="f-g"><label class="f-lbl">Description</label><textarea class="f-inp" id="proj-edit-desc" placeholder="Project description…" style="min-height:56px;"></textarea></div>
+      <div class="f-g"><label class="f-lbl">Deadline</label><input class="f-inp" id="proj-edit-dl" type="date"/></div>
+      <div class="btn-ghost" style="padding:8px;font-size:13px;text-align:center;margin-top:6px;" onclick="saveProjectMeta()">Save</div>
+    </div>
+
+    <!-- Tasks in this project -->
+    <div style="font-size:13px;font-weight:700;color:var(--t2);margin-bottom:8px;">Tasks</div>
+    <div id="proj-tasks"></div>
+
+    <!-- Versions -->
+    <div style="font-size:13px;font-weight:700;color:var(--t2);margin:16px 0 8px;">Version History</div>
+    <div id="proj-versions"></div>
+    <div style="margin-top:10px;">
+      <div class="f-g"><label class="f-lbl">Add Version</label>
+        <div style="display:flex;flex-direction:column;gap:6px;">
+          <input class="f-inp" id="proj-ver-name" type="text" placeholder="e.g. v1.0, Phase 2"/>
+          <textarea class="f-inp" id="proj-ver-desc" placeholder="What changed / what's included" style="min-height:48px;resize:none;"></textarea>
+          <div class="f-new-btn" style="text-align:center;padding:8px;width:100%;" onclick="addProjectVersion()">Add Version</div>
+        </div>
+      </div>
+    </div>
   </div>
 </div>
 
@@ -806,13 +866,24 @@ function getProjects(co,dept){
   return projectsCache[projKey(co,dept)]||[];
 }
 
+function getProjectNames(co,dept){
+  return getProjects(co,dept).map(p=>p.name||p);
+}
+
 async function loadAllProjects(){
   return new Promise((res,rej)=>{
     const tx=db.transaction(PROJ_STORE,'readonly');
     const req=tx.objectStore(PROJ_STORE).getAll();
     req.onsuccess=e=>{
       projectsCache={};
-      (e.target.result||[]).forEach(r=>{projectsCache[r.key]=r.projects||[];});
+      (e.target.result||[]).forEach(r=>{
+        // Migrate: if projects are strings, convert to objects
+        const list=(r.projects||[]).map(p=>{
+          if(typeof p==='string') return {name:p,description:'',deadline:'',versions:[]};
+          return p;
+        });
+        projectsCache[r.key]=list;
+      });
       res();
     };
     req.onerror=e=>rej(e.target.error);
@@ -822,9 +893,9 @@ async function loadAllProjects(){
 async function addProject(co,dept,name){
   const k=projKey(co,dept);
   const list=projectsCache[k]||[];
-  if(list.includes(name)) return;
-  list.push(name);
-  list.sort();
+  if(list.find(p=>p.name===name)) return;
+  list.push({name,description:'',deadline:'',versions:[]});
+  list.sort((a,b)=>a.name.localeCompare(b.name));
   projectsCache[k]=list;
   return new Promise((res,rej)=>{
     const tx=db.transaction(PROJ_STORE,'readwrite');
@@ -834,20 +905,41 @@ async function addProject(co,dept,name){
   });
 }
 
+function getProjectObj(co,dept,name){
+  const list=projectsCache[projKey(co,dept)]||[];
+  return list.find(p=>p.name===name)||null;
+}
+
+async function saveProjectList(co,dept){
+  const k=projKey(co,dept);
+  const list=projectsCache[k]||[];
+  return new Promise((res,rej)=>{
+    const tx=db.transaction(PROJ_STORE,'readwrite');
+    tx.objectStore(PROJ_STORE).put({key:k,projects:list});
+    tx.oncomplete=()=>res();
+    tx.onerror=e=>rej(e.target.error);
+  });
+}
+
 async function seedProjectsFromTasks(){
   const seeded={};
   tasks.forEach(t=>{
     if(!t.project) return;
     const k=projKey(t.company,t.dept);
-    if(!seeded[k]) seeded[k]=new Set(getProjects(t.company,t.dept));
+    if(!seeded[k]) seeded[k]=new Set(getProjects(t.company,t.dept).map(p=>p.name||p));
     seeded[k].add(t.project);
   });
   for(const [k,s] of Object.entries(seeded)){
-    const list=[...s].sort();
-    projectsCache[k]=list;
+    const existing=projectsCache[k]||[];
+    const existingNames=new Set(existing.map(p=>p.name||p));
+    [...s].forEach(name=>{
+      if(!existingNames.has(name)) existing.push({name,description:'',deadline:'',versions:[]});
+    });
+    existing.sort((a,b)=>(a.name||a).localeCompare(b.name||b));
+    projectsCache[k]=existing;
     await new Promise((res,rej)=>{
       const tx=db.transaction(PROJ_STORE,'readwrite');
-      const req=tx.objectStore(PROJ_STORE).put({key:k,projects:list});
+      const req=tx.objectStore(PROJ_STORE).put({key:k,projects:existing});
       req.onsuccess=()=>res();
       req.onerror=e=>rej(e.target.error);
     });
@@ -949,18 +1041,42 @@ function renderCompanyManager(){
   const keys=Object.keys(COMPANIES).sort((a,b)=>(COMPANIES[a].order||0)-(COMPANIES[b].order||0));
   el.innerHTML=keys.map(k=>{
     const c=COMPANIES[k];
-    const depts=(DEPTS[k]||[]).join(', ');
+    const deptList=(DEPTS[k]||[]);
+    const deptRows=deptList.map(d=>{
+      const taskCount=tasks.filter(t=>t.company===k&&t.dept===d).length;
+      const projs=getProjects(k,d);
+      const projRows=projs.map(p=>{
+        const pName=p.name||p;
+        const pCount=tasks.filter(t=>t.company===k&&t.dept===d&&t.project===pName).length;
+        const dlBadge=p.deadline?`<span style="font-size:10px;color:${dlColor(p.deadline)||'var(--t3)'};margin-left:4px;">${fmtDate(p.deadline)}</span>`:'';
+        return `<div style="display:flex;align-items:center;gap:6px;padding:3px 0 3px 20px;">
+          <span style="font-size:11px;color:var(--t3);flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;cursor:pointer;" onclick="openProjectDetail('${k}','${d.replace(/'/g,"\\'")}','${pName.replace(/'/g,"\\'")}')">📁 ${pName}${dlBadge} <span style="opacity:.6">(${pCount})</span></span>
+          ${pCount===0?`<span class="mi mi-xs" style="color:var(--p);cursor:pointer;" onclick="editProject('${k}','${d.replace(/'/g,"\\'")}','${pName.replace(/'/g,"\\'")}')">edit</span>
+          <span class="mi mi-xs" style="color:var(--danger);cursor:pointer;" onclick="removeProject('${k}','${d.replace(/'/g,"\\'")}','${pName.replace(/'/g,"\\'")}')">close</span>`
+          :`<span class="mi mi-xs" style="color:var(--p);cursor:pointer;" onclick="openProjectDetail('${k}','${d.replace(/'/g,"\\'")}','${pName.replace(/'/g,"\\'")}')">info</span>`}
+        </div>`;
+      }).join('');
+      return `<div style="padding:4px 0;border-bottom:1px solid var(--border);">
+        <div style="display:flex;align-items:center;gap:6px;">
+          <span style="font-size:12px;flex:1;">${d} <span style="font-size:10px;color:var(--t3);">(${taskCount})</span></span>
+          ${taskCount===0?`<span class="mi mi-xs" style="color:var(--p);cursor:pointer;" onclick="editDept('${k}','${d.replace(/'/g,"\\'")}')">edit</span>
+          <span class="mi mi-xs" style="color:var(--danger);cursor:pointer;" onclick="removeDept('${k}','${d.replace(/'/g,"\\'")}')">close</span>`
+          :`<span style="font-size:10px;color:var(--t3);">in use</span>`}
+        </div>
+        ${projRows}
+      </div>`;
+    }).join('');
     return `<div class="set-row" style="flex-direction:column;align-items:stretch;">
       <div style="display:flex;align-items:center;gap:10px;">
         <div style="width:10px;height:10px;border-radius:50%;background:${c.clr};flex-shrink:0;"></div>
         <div style="flex:1;min-width:0;">
           <div class="set-info-label">${c.name}</div>
-          <div class="set-info-sub">${c.label||''} · ${(DEPTS[k]||[]).length} depts</div>
+          <div class="set-info-sub">${c.label||''} · ${deptList.length} depts</div>
         </div>
         <span class="mi mi-sm" style="color:var(--p);cursor:pointer;" onclick="editCompany('${k}')">edit</span>
         <span class="mi mi-sm" style="color:var(--danger);cursor:pointer;" onclick="removeCompany('${k}')">delete</span>
       </div>
-      <div style="font-size:11px;color:var(--t3);margin-top:4px;">${depts||'No departments'}</div>
+      <div style="margin-top:6px;padding-left:20px;">${deptRows||'<span style="font-size:11px;color:var(--t3);">No departments</span>'}</div>
     </div>`;
   }).join('');
 }
@@ -1015,6 +1131,195 @@ async function removeCompany(id){
   renderCompanyManager();
   renderAll();
   toast(`${c.name} removed`);
+}
+
+async function editDept(coId, oldName){
+  const newName=prompt('Rename department:',oldName);
+  if(!newName||newName.trim()===oldName) return;
+  const name=newName.trim();
+  const list=DEPTS[coId]||[];
+  const idx=list.indexOf(oldName);
+  if(idx>=0) list[idx]=name;
+  // Update project keys
+  const oldKey=projKey(coId,oldName);
+  const newKey=projKey(coId,name);
+  if(projectsCache[oldKey]){
+    projectsCache[newKey]=projectsCache[oldKey];
+    delete projectsCache[oldKey];
+    await new Promise((res,rej)=>{
+      const tx=db.transaction(PROJ_STORE,'readwrite');
+      const s=tx.objectStore(PROJ_STORE);
+      s.delete(oldKey);
+      s.put({key:newKey,projects:projectsCache[newKey]});
+      tx.oncomplete=()=>res();
+      tx.onerror=e=>rej(e.target.error);
+    });
+  }
+  await saveCompanies();
+  renderCompanyManager();
+  toast(`Renamed to ${name}`);
+}
+
+async function removeDept(coId, deptName){
+  const count=tasks.filter(t=>t.company===coId&&t.dept===deptName).length;
+  if(count>0){toast(`${deptName} has ${count} tasks — clear them first`);return;}
+  if(!confirm(`Remove ${deptName}?`)) return;
+  const list=DEPTS[coId]||[];
+  DEPTS[coId]=list.filter(d=>d!==deptName);
+  // Remove projects for this dept
+  const k=projKey(coId,deptName);
+  delete projectsCache[k];
+  try{
+    const tx=db.transaction(PROJ_STORE,'readwrite');
+    tx.objectStore(PROJ_STORE).delete(k);
+  }catch(e){}
+  await saveCompanies();
+  renderCompanyManager();
+  toast(`${deptName} removed`);
+}
+
+async function editProject(coId, dept, oldName){
+  const newName=prompt('Rename project:',oldName);
+  if(!newName||newName.trim()===oldName) return;
+  const name=newName.trim();
+  const k=projKey(coId,dept);
+  const list=projectsCache[k]||[];
+  const proj=list.find(p=>(p.name||p)===oldName);
+  if(proj) proj.name=name;
+  list.sort((a,b)=>(a.name||a).localeCompare(b.name||b));
+  projectsCache[k]=list;
+  await saveProjectList(coId,dept);
+  // Update task references
+  tasks.forEach(t=>{
+    if(t.company===coId&&t.dept===dept&&t.project===oldName){
+      t.project=name;
+      putTask(t);
+    }
+  });
+  renderCompanyManager();
+  renderAll();
+  toast(`Renamed to ${name}`);
+}
+
+async function removeProject(coId, dept, projName){
+  const count=tasks.filter(t=>t.company===coId&&t.dept===dept&&t.project===projName).length;
+  if(count>0){toast(`${projName} has ${count} tasks — clear them first`);return;}
+  if(!confirm(`Remove project "${projName}"?`)) return;
+  const k=projKey(coId,dept);
+  projectsCache[k]=(projectsCache[k]||[]).filter(p=>(p.name||p)!==projName);
+  await saveProjectList(coId,dept);
+  renderCompanyManager();
+  toast(`${projName} removed`);
+}
+
+// ══════════════════════════════════════════════════════
+// PROJECT DETAIL
+// ══════════════════════════════════════════════════════
+let projDetailCtx=null; // {co, dept, name}
+
+function openProjectDetail(co, dept, name){
+  projDetailCtx={co,dept,name};
+  const proj=getProjectObj(co,dept,name);
+  const coObj=COMPANIES[co];
+
+  document.getElementById('proj-title').textContent=name;
+  document.getElementById('proj-sub').textContent=`${coObj?.name||co} · ${dept}`;
+
+  // Description
+  const descEl=document.getElementById('proj-desc');
+  if(proj?.description){
+    descEl.textContent=proj.description;
+    descEl.style.display='block';
+  } else {
+    descEl.style.display='none';
+  }
+
+  // Meta
+  const meta=document.getElementById('proj-meta');
+  const projTasks=tasks.filter(t=>t.company===co&&t.dept===dept&&t.project===name);
+  const done=projTasks.filter(t=>t.status==='done').length;
+  const overdue=projTasks.filter(t=>t.status==='overdue').length;
+  meta.innerHTML=`
+    <div><div class="det-meta-l">Deadline</div><div class="det-meta-v" style="color:${proj?.deadline?dlColor(proj.deadline)||'var(--t1)':'var(--t3)'}">${proj?.deadline?fmtDateFull(proj.deadline):'Not set'}</div></div>
+    <div><div class="det-meta-l">Tasks</div><div class="det-meta-v">${projTasks.length}</div></div>
+    <div><div class="det-meta-l">Done</div><div class="det-meta-v c-s">${done}</div></div>
+    ${overdue?`<div><div class="det-meta-l">Overdue</div><div class="det-meta-v c-d">${overdue}</div></div>`:''}
+  `;
+
+  // Edit fields
+  document.getElementById('proj-edit-desc').value=proj?.description||'';
+  document.getElementById('proj-edit-dl').value=proj?.deadline||'';
+
+  // Tasks list
+  const tasksEl=document.getElementById('proj-tasks');
+  if(projTasks.length){
+    const statusIcon={done:'check_circle',overdue:'error',inprogress:'pending',todo:'radio_button_unchecked'};
+    const statusClr={done:'var(--success)',overdue:'var(--danger)',inprogress:'var(--warn)',todo:'var(--t3)'};
+    tasksEl.innerHTML=projTasks.map(t=>`
+      <div class="proj-task-row" onclick="closeProjectDetail();openDetail('${t.id}')">
+        <span class="mi mi-sm" style="color:${statusClr[t.status]||'var(--t3)'}">${statusIcon[t.status]||'radio_button_unchecked'}</span>
+        <span style="flex:1;font-size:13px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${t.title}</span>
+        ${t.deadline?`<span style="font-size:11px;color:${dlColor(t.deadline)||'var(--t2)'}">${fmtDate(t.deadline)}</span>`:''}
+      </div>`).join('');
+  } else {
+    tasksEl.innerHTML='<div style="font-size:12px;color:var(--t3);padding:8px 0;">No tasks in this project</div>';
+  }
+
+  // Versions (chronological — newest first)
+  renderProjectVersions(proj);
+
+  // Clear version inputs
+  document.getElementById('proj-ver-name').value='';
+  document.getElementById('proj-ver-desc').value='';
+
+  document.getElementById('proj-ov').classList.add('on');
+}
+
+function closeProjectDetail(){document.getElementById('proj-ov').classList.remove('on');projDetailCtx=null;}
+
+function renderProjectVersions(proj){
+  const el=document.getElementById('proj-versions');
+  const versions=(proj?.versions||[]).slice().reverse(); // newest first
+  if(!versions.length){
+    el.innerHTML='<div style="font-size:12px;color:var(--t3);padding:4px 0;">No versions yet</div>';
+    return;
+  }
+  el.innerHTML=versions.map((v,i)=>`
+    <div class="proj-ver">
+      <div class="proj-ver-hdr">
+        <span class="proj-ver-name">${v.version||'v'+(versions.length-i)}</span>
+        <span class="proj-ver-date">${v.date?fmtDateFull(v.date):'—'}</span>
+      </div>
+      ${v.description?`<div class="proj-ver-desc">${v.description}</div>`:''}
+    </div>`).join('');
+}
+
+async function saveProjectMeta(){
+  if(!projDetailCtx) return;
+  const {co,dept,name}=projDetailCtx;
+  const proj=getProjectObj(co,dept,name);
+  if(!proj){toast('Project not found');return;}
+  proj.description=document.getElementById('proj-edit-desc').value.trim();
+  proj.deadline=document.getElementById('proj-edit-dl').value;
+  await saveProjectList(co,dept);
+  openProjectDetail(co,dept,name); // re-render
+  renderCompanyManager();
+  toast('Project updated');
+}
+
+async function addProjectVersion(){
+  if(!projDetailCtx) return;
+  const {co,dept,name}=projDetailCtx;
+  const proj=getProjectObj(co,dept,name);
+  if(!proj){toast('Project not found');return;}
+  const ver=document.getElementById('proj-ver-name').value.trim();
+  const desc=document.getElementById('proj-ver-desc').value.trim();
+  if(!ver){toast('Version name required');return;}
+  if(!proj.versions) proj.versions=[];
+  proj.versions.push({version:ver,description:desc,date:new Date().toISOString().slice(0,10)});
+  await saveProjectList(co,dept);
+  openProjectDetail(co,dept,name); // re-render
+  toast(`${ver} added`);
 }
 
 // ══════════════════════════════════════════════════════
@@ -1247,12 +1552,28 @@ function isThisWeek(iso){
   const d=daysUntil(iso);
   return d>=0 && d<=7;
 }
+function dlColor(iso){
+  if(!iso) return '';
+  const d=daysUntil(iso);
+  if(d<0) return 'var(--danger)';
+  if(d<=3) return 'var(--danger)';
+  if(d<=5) return 'var(--warn)';
+  return '';
+}
+function dlCls(iso){
+  if(!iso) return '';
+  const d=daysUntil(iso);
+  if(d<0) return 'over';
+  if(d<=3) return 'over';
+  if(d<=5) return 'soon';
+  return '';
+}
 function getUrgencyClass(task){
   if(task.status==='overdue') return 'kp-d';
   if(!task.deadline) return 'kp-m';
   const d=daysUntil(task.deadline);
   if(d<=3) return 'kp-d';
-  if(d<=7) return 'kp-w';
+  if(d<=5) return 'kp-w';
   return 'kp-g';
 }
 function getUrgencyFoot(task){
@@ -1470,7 +1791,7 @@ function renderUpcoming(){
     const d=new Date(t.deadline+'T00:00:00');
     const days=daysUntil(t.deadline);
     const mo=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'][d.getMonth()];
-    const badge=days===0?'<span class="dl-badge b-r">Today</span>':days<=3?`<span class="dl-badge b-r">${days}d</span>`:days<=7?`<span class="dl-badge b-a">${days}d</span>`:days<=14?`<span class="dl-badge b-b">${days}d</span>`:`<span class="dl-badge b-g">${days}d</span>`;
+    const badge=days===0?'<span class="dl-badge b-r">Today</span>':days<=3?`<span class="dl-badge b-r">${days}d</span>`:days<=5?`<span class="dl-badge b-a">${days}d</span>`:days<=14?`<span class="dl-badge b-b">${days}d</span>`:`<span class="dl-badge b-g">${days}d</span>`;
     const co=COMPANIES[t.company];
     return `<div class="dl-item" onclick="openDetail('${t.id}')">
       <div class="dl-date-blk"><span class="dl-date-n ${t.status==='overdue'?'over':''}">${d.getDate()}</span><span class="dl-date-mo">${mo}</span></div>
@@ -1687,7 +2008,7 @@ function renderTasksList(){
     dTasks.forEach(t=>{
       const co=COMPANIES[t.company];
       const isDone=t.status==='done';
-      const dueCls=t.status==='overdue'?'over':isThisWeek(t.deadline)?'soon':'';
+      const dueCls=t.status==='overdue'?'over':dlCls(t.deadline);
       const pbar={d:'pb-d',w:'pb-w',g:'pb-g'}[t.priority]||'pb-g';
       const subs=t.subtasks||[];
       const subTxt=subs.length?` · ${subs.filter(s=>s.done).length}/${subs.length}`:'';
@@ -1766,36 +2087,123 @@ async function bulkDone(){
   }
   exitBulk(); renderAll(); toast('Marked done ✓');
 }
+let popupMode=null; // {type:'company',coId} or {type:'status',filter}
+
 function openPopup(coId){
   popupCo=coId;
   const co=COMPANIES[coId];
+  popupMode={type:'company',coId};
+  document.getElementById('popup-name').textContent=co.name;
+  document.getElementById('popup-name').style.color=co.clr;
   const coTasks=tasks.filter(t=>t.company===coId);
   const open=coTasks.filter(t=>t.status!=='done');
-  const el=document.getElementById('popup-name');
-  el.textContent=co.name;
-  el.style.color=co.clr;
-  document.getElementById('popup-meta').textContent=co.label+' · '+open.length+' open · '+coTasks.filter(t=>t.status==='done').length+' done';
-  document.getElementById('popup-tasks').innerHTML=coTasks.sort((a,b)=>{
-    const o={overdue:0,inprogress:1,todo:2,done:3};
-    return (o[a.status]||2)-(o[b.status]||2);
-  }).map(t=>{
-    const dueCls=t.status==='overdue'?'over':isThisWeek(t.deadline)?'soon':'';
-    const isDone=t.status==='done';
-    return `<div class="popup-task">
-      <div class="popup-check ${isDone?'done-chk':''}" onclick="event.stopPropagation();quickToggle('${t.id}').then(()=>openPopup('${coId}'))">
-        <span class="mi mi-xs" style="color:#fff;display:${isDone?'flex':'none'}">check</span>
-      </div>
-      <div class="popup-task-info" onclick="openDetail('${t.id}')">
-        <div class="popup-task-title" style="${isDone?'text-decoration:line-through;color:var(--t2)':''}">${t.title}</div>
-        <div class="popup-task-sub">${t.dept}${t.project?' · '+t.project:''}</div>
-      </div>
-      <div class="popup-task-due ${dueCls}" onclick="openDetail('${t.id}')">${fmtDate(t.deadline)}</div>
-    </div>`;
-  }).join('');
-  document.getElementById('popup-view-btn').onclick=()=>{closePopup();nav('kanban');};
+  document.getElementById('popup-meta').textContent=(co.label||'')+' · '+open.length+' open · '+coTasks.filter(t=>t.status==='done').length+' done';
+
+  // Build dept filter
+  const depts=DEPTS[coId]||[];
+  const deptSel=document.getElementById('popup-dept-sel');
+  deptSel.innerHTML='<option value="">All Departments</option>'+depts.map(d=>`<option value="${d}">${d}</option>`).join('');
+  document.getElementById('popup-dept-filter').style.display='block';
+
+  document.getElementById('popup-view-btn').textContent='View All →';
+  document.getElementById('popup-view-btn').onclick=()=>{
+    closePopup();
+    document.getElementById('tl-co-sel').value=coId;
+    onCoChange();
+    nav('tasks');
+  };
+  renderPopupTasks();
   document.getElementById('co-popup-ov').classList.add('on');
 }
-function closePopup(){document.getElementById('co-popup-ov').classList.remove('on');}
+
+function openStatusPopup(filter){
+  popupMode={type:'status',filter};
+  const labels={overdue:'Overdue',week:'Due This Week',inprogress:'In Progress',done:'Done'};
+  document.getElementById('popup-name').textContent=labels[filter]||filter;
+  document.getElementById('popup-name').style.color={overdue:'var(--danger)',week:'var(--warn)',inprogress:'var(--p)',done:'var(--success)'}[filter]||'var(--t1)';
+  let list;
+  if(filter==='overdue') list=tasks.filter(t=>t.status==='overdue');
+  else if(filter==='week') list=tasks.filter(t=>t.status!=='done'&&isThisWeek(t.deadline));
+  else if(filter==='inprogress') list=tasks.filter(t=>t.status==='inprogress');
+  else if(filter==='done') list=tasks.filter(t=>t.status==='done');
+  else list=[];
+  document.getElementById('popup-meta').textContent=list.length+' task'+(list.length!==1?'s':'');
+  document.getElementById('popup-dept-filter').style.display='none';
+
+  document.getElementById('popup-view-btn').textContent='View All →';
+  document.getElementById('popup-view-btn').onclick=()=>{
+    closePopup();
+    nav('tasks');
+  };
+  renderPopupTasks();
+  document.getElementById('co-popup-ov').classList.add('on');
+}
+
+function renderPopupTasks(){
+  let list;
+  if(popupMode.type==='company'){
+    list=tasks.filter(t=>t.company===popupMode.coId);
+    const deptVal=document.getElementById('popup-dept-sel').value;
+    if(deptVal) list=list.filter(t=>t.dept===deptVal);
+  } else {
+    const f=popupMode.filter;
+    if(f==='overdue') list=tasks.filter(t=>t.status==='overdue');
+    else if(f==='week') list=tasks.filter(t=>t.status!=='done'&&isThisWeek(t.deadline));
+    else if(f==='inprogress') list=tasks.filter(t=>t.status==='inprogress');
+    else if(f==='done') list=tasks.filter(t=>t.status==='done');
+    else list=[];
+  }
+
+  // Group by status section
+  const sections=[
+    {id:'overdue',label:'Overdue',clr:'var(--danger)'},
+    {id:'week',label:'This Week',clr:'var(--warn)',filter:t=>t.status!=='done'&&t.status!=='overdue'&&isThisWeek(t.deadline)},
+    {id:'inprogress',label:'In Progress',clr:'var(--p)',filter:t=>t.status==='inprogress'&&!isThisWeek(t.deadline)},
+    {id:'todo',label:'To Do',clr:'var(--t3)',filter:t=>t.status==='todo'&&!isThisWeek(t.deadline)},
+    {id:'done',label:'Done',clr:'var(--success)'}
+  ];
+
+  const el=document.getElementById('popup-tasks');
+  let html='';
+  sections.forEach(sec=>{
+    let secTasks;
+    if(sec.id==='overdue') secTasks=list.filter(t=>t.status==='overdue');
+    else if(sec.id==='done') secTasks=list.filter(t=>t.status==='done');
+    else if(sec.filter) secTasks=list.filter(sec.filter);
+    else return;
+    if(!secTasks.length) return;
+
+    // Group by dept within section
+    const depts={};
+    secTasks.forEach(t=>{const d=t.dept||'Other';if(!depts[d])depts[d]=[];depts[d].push(t);});
+
+    html+=`<div class="popup-sec" style="color:${sec.clr}">${sec.label} · ${secTasks.length}</div>`;
+    const showDeptHdr=Object.keys(depts).length>1;
+    Object.entries(depts).forEach(([dept,dTasks])=>{
+      if(showDeptHdr) html+=`<div class="popup-dept-hdr">${dept}</div>`;
+      dTasks.forEach(t=>{
+        const dueCls=t.status==='overdue'?'over':dlCls(t.deadline);
+        const isDone=t.status==='done';
+        const refreshCmd=popupMode.type==='company'?`openPopup('${popupMode.coId}')`:`openStatusPopup('${popupMode.filter}')`;
+        html+=`<div class="popup-task">
+          <div class="popup-check ${isDone?'done-chk':''}" onclick="event.stopPropagation();quickToggle('${t.id}').then(()=>{${refreshCmd}})">
+            <span class="mi mi-xs" style="color:#fff;display:${isDone?'flex':'none'}">check</span>
+          </div>
+          <div class="popup-task-info" onclick="openDetail('${t.id}')">
+            <div class="popup-task-title" style="${isDone?'text-decoration:line-through;color:var(--t2)':''}">${t.title}</div>
+            <div class="popup-task-sub">${popupMode.type==='status'?(COMPANIES[t.company]?.name||t.company)+' · ':''}${dept}${t.project?' · '+t.project:''}</div>
+          </div>
+          <div class="popup-task-due ${dueCls}" onclick="openDetail('${t.id}')">${fmtDate(t.deadline)}</div>
+        </div>`;
+      });
+    });
+  });
+
+  if(!html) html='<div class="empty" style="padding:24px;"><div class="empty-title">No tasks</div></div>';
+  el.innerHTML=html;
+}
+
+function closePopup(){document.getElementById('co-popup-ov').classList.remove('on');popupMode=null;}
 
 // ══════════════════════════════════════════════════════
 // TASK DETAIL
@@ -1814,9 +2222,14 @@ function openDetail(id){
   sp.textContent=STATUS_LABELS[t.status]||'To Do';
   document.getElementById('det-sub').textContent=(co?.name||t.company)+' · '+t.dept+(t.project?' · '+t.project:'');
   document.getElementById('det-notes').textContent=t.notes||'No notes.';
-  document.getElementById('det-dl').textContent=fmtDateFull(t.deadline);
+  document.getElementById('det-dl').innerHTML=t.deadline?`<span style="color:${dlColor(t.deadline)||'var(--t1)'}">${fmtDateFull(t.deadline)}</span>`:'TBD';
   document.getElementById('det-prio').textContent=PRIO_LABELS[t.priority]||'—';
-  document.getElementById('det-proj').textContent=t.project||'—';
+  const projEl=document.getElementById('det-proj');
+  if(t.project){
+    projEl.innerHTML=`<span style="color:var(--p);cursor:pointer;" onclick="closeDet();openProjectDetail('${t.company}','${(t.dept||'').replace(/'/g,"\\'")}','${(t.project||'').replace(/'/g,"\\'")}')">${t.project}</span>`;
+  } else {
+    projEl.textContent='—';
+  }
   renderSubtasks(t);
   closePopup();
   document.getElementById('det-ov').classList.add('on');
@@ -1926,10 +2339,57 @@ async function deleteTask(){
   toast('Task deleted');
 }
 
+function addToCalendar(){
+  const t=tasks.find(t=>t.id===detailId);
+  if(!t){toast('No task selected');return;}
+  const co=COMPANIES[t.company];
+  const title=encodeURIComponent(`[${co?.name||t.company}] ${t.title}`);
+  const details=encodeURIComponent(`${t.dept}${t.project?' · '+t.project:''}\n${t.notes||''}`);
+  let dl=t.deadline;
+  if(!dl){
+    const inp=prompt('No deadline set. Enter date (YYYY-MM-DD):');
+    if(!inp) return;
+    dl=inp;
+  }
+  const dateStr=dl.replace(/-/g,'');
+  const url=`https://calendar.google.com/calendar/render?action=TEMPLATE&text=${title}&details=${details}&dates=${dateStr}/${dateStr}`;
+  window.open(url,'_blank');
+}
+
+function addReminder(){
+  const t=tasks.find(t=>t.id===detailId);
+  if(!t){toast('No task selected');return;}
+  const co=COMPANIES[t.company];
+  let dl=t.deadline;
+  if(!dl){
+    const inp=prompt('No deadline set. Enter date (YYYY-MM-DD):');
+    if(!inp) return;
+    dl=inp;
+  }
+  const timeStr=prompt('Reminder time? (HH:MM, 24hr format)','09:00');
+  if(!timeStr) return;
+  const [hh,mm]=(timeStr.match(/^(\d{1,2}):(\d{2})$/)||[]).slice(1);
+  if(!hh){toast('Invalid time format');return;}
+  const start=new Date(dl+'T'+hh.padStart(2,'0')+':'+mm+':00');
+  const end=new Date(start.getTime()+30*60000);
+  const fmt=d=>d.toISOString().replace(/[-:]/g,'').replace(/\.\d{3}/,'');
+  const title=`[${co?.name||t.company}] ${t.title}`;
+  const desc=`${t.dept}${t.project?' · '+t.project:''}\n${t.notes||''}`;
+  const ics=`BEGIN:VCALENDAR\nVERSION:2.0\nBEGIN:VEVENT\nDTSTART:${fmt(start)}\nDTEND:${fmt(end)}\nSUMMARY:${title}\nDESCRIPTION:${desc.replace(/\n/g,'\\n')}\nBEGIN:VALARM\nTRIGGER:-PT15M\nACTION:DISPLAY\nDESCRIPTION:Reminder\nEND:VALARM\nEND:VEVENT\nEND:VCALENDAR`;
+  const blob=new Blob([ics],{type:'text/calendar'});
+  const a=document.createElement('a');
+  a.href=URL.createObjectURL(blob);
+  a.download=`${t.title.replace(/[^a-zA-Z0-9]/g,'_')}.ics`;
+  a.click();
+  URL.revokeObjectURL(a.href);
+  toast('Reminder downloaded — open to add');
+}
+
 function editTask(){
   if(!detailId) return;
+  const id=detailId;
   closeDet();
-  openForm(detailId);
+  openForm(id);
 }
 
 // ══════════════════════════════════════════════════════
@@ -2022,7 +2482,7 @@ function onFormDeptChange(){
 }
 
 function updateFormProjects(co,dept,preselect=null){
-  const projs=getProjects(co,dept);
+  const projs=getProjectNames(co,dept);
   const sel=document.getElementById('f-proj');
   sel.innerHTML=
     '<option value="">None</option>'+
