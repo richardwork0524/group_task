@@ -223,7 +223,8 @@ textarea.f-inp{resize:none;min-height:72px;}
 .sheet-btns{display:flex;gap:10px;margin-top:20px;}
 
 /* ── TASK DETAIL ── */
-.det-sheet{background:var(--surface);border-radius:var(--r) var(--r) 0 0;width:100%;max-width:430px;padding:0 20px calc(40px + var(--safe-bottom));}
+.det-sheet{background:var(--surface);border-radius:var(--r) var(--r) 0 0;width:100%;max-width:430px;max-height:90vh;overflow-y:auto;-webkit-overflow-scrolling:touch;padding:0 20px calc(40px + var(--safe-bottom));}
+.det-sheet .sum-c{background:var(--bg);}
 .det-tag-row{display:flex;gap:8px;margin-bottom:12px;flex-wrap:wrap;}
 .det-tag{font-size:11px;padding:3px 9px;border-radius:20px;background:var(--surface2);color:var(--t2);}
 .det-title{font-size:20px;font-weight:700;letter-spacing:-.3px;margin-bottom:6px;}
@@ -236,6 +237,10 @@ textarea.f-inp{resize:none;min-height:72px;}
 .det-actions{display:flex;gap:8px;margin-bottom:14px;}
 .det-act-btn{flex:1;display:flex;align-items:center;justify-content:center;gap:6px;padding:10px;border:1.5px solid var(--border);border-radius:var(--r-sm);font-size:13px;font-weight:500;color:var(--t2);cursor:pointer;background:var(--surface2);}
 .det-act-btn:active{background:var(--border);}
+.clr-grid{display:grid;grid-template-columns:repeat(6,1fr);gap:10px;padding:16px 20px;}
+.clr-swatch{width:100%;aspect-ratio:1;border-radius:50%;cursor:pointer;border:3px solid transparent;transition:border-color .15s,transform .1s;}
+.clr-swatch.on{border-color:var(--t1);transform:scale(1.1);}
+.clr-swatch:active{transform:scale(.9);}
 .proj-ver{padding:10px;background:var(--surface2);border-radius:var(--r-sm);margin-bottom:8px;border-left:3px solid var(--p);}
 .proj-ver-hdr{display:flex;align-items:center;justify-content:space-between;}
 .proj-ver-name{font-size:13px;font-weight:600;}
@@ -691,8 +696,13 @@ textarea.f-inp{resize:none;min-height:72px;}
 
 <!-- PROJECT DETAIL -->
 <div class="ov" id="proj-ov" onclick="if(event.target===this)closeProjectDetail()">
-  <div class="det-sheet" style="max-height:90vh;">
+  <div class="det-sheet">
     <div class="handle"></div>
+    <div id="proj-back" style="display:none;padding-bottom:4px;">
+      <span style="font-size:13px;color:var(--p);cursor:pointer;display:inline-flex;align-items:center;gap:4px;" onclick="backFromProject()">
+        <span class="mi mi-sm">arrow_back</span> Back
+      </span>
+    </div>
     <div style="display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:4px;">
       <div class="det-title" id="proj-title"></div>
       <span class="mi" style="cursor:pointer;color:var(--t2)" onclick="closeProjectDetail()">close</span>
@@ -724,6 +734,43 @@ textarea.f-inp{resize:none;min-height:72px;}
         </div>
       </div>
     </div>
+  </div>
+</div>
+
+<!-- COMPANY MANAGER -->
+<div class="ov" id="cm-ov" onclick="if(event.target===this)closeCoManager()">
+  <div class="det-sheet">
+    <div class="handle"></div>
+    <div style="padding:0 0 4px;">
+      <div style="display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:4px;">
+        <div class="det-title" id="cm-title" style="flex:1;padding-right:12px;cursor:pointer;" onclick="cmEditName()"></div>
+        <div style="display:flex;gap:12px;align-items:center;">
+          <span class="mi mi-sm" id="cm-edit-toggle" style="cursor:pointer;color:var(--p)" onclick="toggleCmEdit()">edit</span>
+          <span class="mi mi-sm" style="cursor:pointer;color:var(--p)" onclick="openColorPicker()">palette</span>
+          <span class="mi" style="cursor:pointer;color:var(--t2)" onclick="closeCoManager()">close</span>
+        </div>
+      </div>
+      <div class="det-sub" id="cm-sub" style="cursor:pointer;" onclick="cmEditLabel()"></div>
+      <div id="cm-tree" style="margin-top:10px;"></div>
+      <div id="cm-edit-tools" style="display:none;">
+        <div class="det-actions" style="margin-top:12px;">
+          <div class="det-act-btn" onclick="cmAddDept()"><span class="mi mi-sm">create_new_folder</span> Dept</div>
+          <div class="det-act-btn" onclick="cmAddProj()"><span class="mi mi-sm">note_add</span> Project</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- COLOR PICKER -->
+<div class="ov" id="clr-ov" onclick="if(event.target===this)closeColorPicker()">
+  <div class="sheet-base" style="padding-bottom:calc(20px + var(--safe-bottom));">
+    <div class="handle"></div>
+    <div class="popup-hdr">
+      <div class="popup-title">Choose Color</div>
+      <div class="popup-close" onclick="closeColorPicker()"><span class="mi">close</span></div>
+    </div>
+    <div class="clr-grid" id="clr-grid"></div>
   </div>
 </div>
 
@@ -970,7 +1017,6 @@ function checkHighPriority(){
 // ══════════════════════════════════════════════════════
 // COMPANY MANAGEMENT
 // ══════════════════════════════════════════════════════
-const EXTRA_COLORS=['#E65100','#1565C0','#2E7D32','#6A1B9A','#AD1457','#00695C','#4527A0','#BF360C','#0277BD','#558B2F'];
 
 async function loadCompanies(){
   return new Promise((res,rej)=>{
@@ -1001,10 +1047,17 @@ function makeCoId(name){
   return name.toLowerCase().replace(/[^a-z0-9]/g,'').slice(0,12)||'co'+Date.now();
 }
 
+const ALL_COLORS=[
+  '#F44336','#E91E63','#9C27B0','#673AB7','#3F51B5','#2196F3',
+  '#03A9F4','#00BCD4','#009688','#4CAF50','#8BC34A','#CDDC39',
+  '#FFEB3B','#FFC107','#FF9800','#FF5722','#795548','#607D8B',
+  '#B71C1C','#880E4F','#4A148C','#1A237E','#0D47A1','#006064',
+  '#00C853','#00BFA5','#651FFF','#D500F9','#FF1744','#FF6D00'
+];
+
 function nextColor(){
   const used=new Set(Object.values(COMPANIES).map(c=>c.clr));
-  const all=[...EXTRA_COLORS,'var(--co-rubii)','var(--co-dc)','var(--co-conts)','var(--co-hookka)','var(--co-gh)','var(--co-carres)'];
-  return all.find(c=>!used.has(c))||EXTRA_COLORS[Math.floor(Math.random()*EXTRA_COLORS.length)];
+  return ALL_COLORS.find(c=>!used.has(c))||ALL_COLORS[Math.floor(Math.random()*ALL_COLORS.length)];
 }
 
 function buildCompanyOptions(){
@@ -1041,42 +1094,17 @@ function renderCompanyManager(){
   const keys=Object.keys(COMPANIES).sort((a,b)=>(COMPANIES[a].order||0)-(COMPANIES[b].order||0));
   el.innerHTML=keys.map(k=>{
     const c=COMPANIES[k];
-    const deptList=(DEPTS[k]||[]);
-    const deptRows=deptList.map(d=>{
-      const taskCount=tasks.filter(t=>t.company===k&&t.dept===d).length;
-      const projs=getProjects(k,d);
-      const projRows=projs.map(p=>{
-        const pName=p.name||p;
-        const pCount=tasks.filter(t=>t.company===k&&t.dept===d&&t.project===pName).length;
-        const dlBadge=p.deadline?`<span style="font-size:10px;color:${dlColor(p.deadline)||'var(--t3)'};margin-left:4px;">${fmtDate(p.deadline)}</span>`:'';
-        return `<div style="display:flex;align-items:center;gap:6px;padding:3px 0 3px 20px;">
-          <span style="font-size:11px;color:var(--t3);flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;cursor:pointer;" onclick="openProjectDetail('${k}','${d.replace(/'/g,"\\'")}','${pName.replace(/'/g,"\\'")}')">📁 ${pName}${dlBadge} <span style="opacity:.6">(${pCount})</span></span>
-          ${pCount===0?`<span class="mi mi-xs" style="color:var(--p);cursor:pointer;" onclick="editProject('${k}','${d.replace(/'/g,"\\'")}','${pName.replace(/'/g,"\\'")}')">edit</span>
-          <span class="mi mi-xs" style="color:var(--danger);cursor:pointer;" onclick="removeProject('${k}','${d.replace(/'/g,"\\'")}','${pName.replace(/'/g,"\\'")}')">close</span>`
-          :`<span class="mi mi-xs" style="color:var(--p);cursor:pointer;" onclick="openProjectDetail('${k}','${d.replace(/'/g,"\\'")}','${pName.replace(/'/g,"\\'")}')">info</span>`}
-        </div>`;
-      }).join('');
-      return `<div style="padding:4px 0;border-bottom:1px solid var(--border);">
-        <div style="display:flex;align-items:center;gap:6px;">
-          <span style="font-size:12px;flex:1;">${d} <span style="font-size:10px;color:var(--t3);">(${taskCount})</span></span>
-          ${taskCount===0?`<span class="mi mi-xs" style="color:var(--p);cursor:pointer;" onclick="editDept('${k}','${d.replace(/'/g,"\\'")}')">edit</span>
-          <span class="mi mi-xs" style="color:var(--danger);cursor:pointer;" onclick="removeDept('${k}','${d.replace(/'/g,"\\'")}')">close</span>`
-          :`<span style="font-size:10px;color:var(--t3);">in use</span>`}
-        </div>
-        ${projRows}
-      </div>`;
-    }).join('');
-    return `<div class="set-row" style="flex-direction:column;align-items:stretch;">
-      <div style="display:flex;align-items:center;gap:10px;">
-        <div style="width:10px;height:10px;border-radius:50%;background:${c.clr};flex-shrink:0;"></div>
-        <div style="flex:1;min-width:0;">
-          <div class="set-info-label">${c.name}</div>
-          <div class="set-info-sub">${c.label||''} · ${deptList.length} depts</div>
-        </div>
-        <span class="mi mi-sm" style="color:var(--p);cursor:pointer;" onclick="editCompany('${k}')">edit</span>
-        <span class="mi mi-sm" style="color:var(--danger);cursor:pointer;" onclick="removeCompany('${k}')">delete</span>
+    const deptCount=(DEPTS[k]||[]).length;
+    const taskCount=tasks.filter(t=>t.company===k).length;
+    return `<div class="set-row">
+      <div style="width:10px;height:10px;border-radius:50%;background:${c.clr};flex-shrink:0;"></div>
+      <div style="flex:1;min-width:0;">
+        <div class="set-info-label">${c.name}</div>
+        <div class="set-info-sub">${c.label||''} · ${deptCount} depts · ${taskCount} tasks</div>
       </div>
-      <div style="margin-top:6px;padding-left:20px;">${deptRows||'<span style="font-size:11px;color:var(--t3);">No departments</span>'}</div>
+      <span class="mi mi-sm" style="color:var(--p);cursor:pointer;" onclick="closeSettings();openCoManager('${k}')">folder_open</span>
+      <span class="mi mi-sm" style="color:var(--p);cursor:pointer;" onclick="editCompany('${k}')">edit</span>
+      <span class="mi mi-sm" style="color:var(--danger);cursor:pointer;" onclick="removeCompany('${k}')">delete</span>
     </div>`;
   }).join('');
 }
@@ -1216,9 +1244,13 @@ async function removeProject(coId, dept, projName){
 // PROJECT DETAIL
 // ══════════════════════════════════════════════════════
 let projDetailCtx=null; // {co, dept, name}
+let projOpenedFromCm=false;
 
 function openProjectDetail(co, dept, name){
   projDetailCtx={co,dept,name};
+  // Track if opened from CM
+  projOpenedFromCm=!!cmCoId;
+  document.getElementById('proj-back').style.display=projOpenedFromCm?'block':'none';
   const proj=getProjectObj(co,dept,name);
   const coObj=COMPANIES[co];
 
@@ -1275,7 +1307,13 @@ function openProjectDetail(co, dept, name){
   document.getElementById('proj-ov').classList.add('on');
 }
 
-function closeProjectDetail(){document.getElementById('proj-ov').classList.remove('on');projDetailCtx=null;}
+function closeProjectDetail(){document.getElementById('proj-ov').classList.remove('on');projDetailCtx=null;projOpenedFromCm=false;}
+
+function backFromProject(){
+  const coId=projDetailCtx?.co;
+  closeProjectDetail();
+  if(coId) openCoManager(coId);
+}
 
 function renderProjectVersions(proj){
   const el=document.getElementById('proj-versions');
@@ -1320,6 +1358,187 @@ async function addProjectVersion(){
   await saveProjectList(co,dept);
   openProjectDetail(co,dept,name); // re-render
   toast(`${ver} added`);
+}
+
+// ══════════════════════════════════════════════════════
+// COMPANY MANAGER (from home card name tap)
+// ══════════════════════════════════════════════════════
+let cmCoId=null;
+let cmEditMode=false;
+
+function openCoManager(coId){
+  cmCoId=coId;
+  cmEditMode=false;
+  const co=COMPANIES[coId];
+  document.getElementById('cm-title').textContent=co.name;
+  document.getElementById('cm-title').style.color=co.clr;
+  document.getElementById('cm-sub').textContent=co.label||'Tap to set label';
+
+  document.getElementById('cm-edit-tools').style.display='none';
+  document.getElementById('cm-edit-toggle').textContent='edit';
+  renderCmTree();
+  document.getElementById('cm-ov').classList.add('on');
+}
+function closeCoManager(){document.getElementById('cm-ov').classList.remove('on');cmCoId=null;cmEditMode=false;}
+
+function toggleCmEdit(){
+  cmEditMode=!cmEditMode;
+  document.getElementById('cm-edit-toggle').textContent=cmEditMode?'visibility':'edit';
+  document.getElementById('cm-edit-tools').style.display=cmEditMode?'block':'none';
+  renderCmTree();
+}
+
+async function cmEditName(){
+  if(!cmCoId) return;
+  const co=COMPANIES[cmCoId];
+  const name=prompt('Company name:',co.name);
+  if(!name||!name.trim()) return;
+  co.name=name.trim();
+  await saveCompanies();
+  document.getElementById('cm-title').textContent=co.name;
+  document.getElementById('cm-title').style.color=co.clr;
+  rebuildAllDropdowns();
+  renderAll();
+}
+
+async function cmEditLabel(){
+  if(!cmCoId) return;
+  const co=COMPANIES[cmCoId];
+  const label=prompt('Label (e.g. Marketing):',co.label||'');
+  if(label===null) return;
+  co.label=label.trim();
+  await saveCompanies();
+  document.getElementById('cm-sub').textContent=co.label||'Tap to set label';
+  renderAll();
+}
+
+function openColorPicker(){
+  if(!cmCoId) return;
+  const co=COMPANIES[cmCoId];
+  const grid=document.getElementById('clr-grid');
+  grid.innerHTML=ALL_COLORS.map(c=>`
+    <div class="clr-swatch ${co.clr===c?'on':''}" style="background:${c};" onclick="pickColor('${c}')"></div>
+  `).join('');
+  document.getElementById('clr-ov').classList.add('on');
+}
+function closeColorPicker(){document.getElementById('clr-ov').classList.remove('on');}
+
+async function pickColor(clr){
+  if(!cmCoId) return;
+  const co=COMPANIES[cmCoId];
+  co.clr=clr;
+  await saveCompanies();
+  closeColorPicker();
+  document.getElementById('cm-title').style.color=clr;
+  renderAll();
+  toast('Color updated');
+}
+
+function renderCmTree(){
+  if(!cmCoId) return;
+  const deptListRaw=DEPTS[cmCoId]||[];
+  // Sort: departments with tasks first, empty ones to bottom
+  const deptList=[...deptListRaw].sort((a,b)=>{
+    const aCount=tasks.filter(t=>t.company===cmCoId&&t.dept===a).length;
+    const bCount=tasks.filter(t=>t.company===cmCoId&&t.dept===b).length;
+    if(aCount>0&&bCount===0) return -1;
+    if(aCount===0&&bCount>0) return 1;
+    return 0;
+  });
+  const el=document.getElementById('cm-tree');
+
+  if(!cmEditMode){
+    let html='';
+    deptList.forEach(d=>{
+      const taskCount=tasks.filter(t=>t.company===cmCoId&&t.dept===d).length;
+      const projs=getProjects(cmCoId,d);
+      html+=`<div style="font-size:13px;font-weight:700;color:var(--t2);padding:14px 0 6px;">${d} <span style="font-weight:400;">(${taskCount})</span></div>`;
+      if(projs.length){
+        projs.forEach(p=>{
+          const pName=p.name||p;
+          const pCount=tasks.filter(t=>t.company===cmCoId&&t.dept===d&&t.project===pName).length;
+          const dlBadge=p.deadline?`<span style="color:${dlColor(p.deadline)||'var(--t2)'}"> \u00b7 ${fmtDate(p.deadline)}</span>`:'';
+          html+=`<div class="popup-task" onclick="closeCoManager();openProjectDetail('${cmCoId}','${d.replace(/'/g,"\\'")}','${pName.replace(/'/g,"\\'")}')">
+            <div class="popup-task-info">
+              <div class="popup-task-title">${pName}</div>
+              <div class="popup-task-sub">${pCount} task${pCount!==1?'s':''}${dlBadge}</div>
+            </div>
+            <span class="mi mi-sm" style="color:var(--t3)">chevron_right</span>
+          </div>`;
+        });
+      } else {
+        html+=`<div style="font-size:12px;color:var(--t3);padding:8px 0 4px;">No projects</div>`;
+      }
+    });
+    el.innerHTML=html||'<div style="font-size:13px;color:var(--t3);padding:12px 0;">No departments \u2014 tap Edit to add</div>';
+  } else {
+    let html='';
+    deptList.forEach(d=>{
+      const taskCount=tasks.filter(t=>t.company===cmCoId&&t.dept===d).length;
+      const projs=getProjects(cmCoId,d);
+      const canEditDept=taskCount===0;
+      html+=`<div class="popup-task" style="background:var(--surface2);border-radius:var(--r-sm);margin-top:10px;">
+        <div class="popup-task-info">
+          <div class="popup-task-title" style="font-weight:600;">${d}</div>
+          <div class="popup-task-sub">${taskCount} task${taskCount!==1?'s':''} \u00b7 ${projs.length} project${projs.length!==1?'s':''}</div>
+        </div>
+        ${canEditDept?`<span class="mi mi-sm" style="color:var(--p);cursor:pointer;" onclick="event.stopPropagation();editDept('${cmCoId}','${d.replace(/'/g,"\\'")}');renderCmTree()">edit</span>
+        <span class="mi mi-sm" style="color:var(--danger);cursor:pointer;" onclick="event.stopPropagation();removeDept('${cmCoId}','${d.replace(/'/g,"\\'")}');renderCmTree()">delete</span>`:''}
+      </div>`;
+      projs.forEach(p=>{
+        const pName=p.name||p;
+        const pCount=tasks.filter(t=>t.company===cmCoId&&t.dept===d&&t.project===pName).length;
+        const canEdit=pCount===0;
+        html+=`<div class="popup-task" style="padding-left:32px;">
+          <div class="popup-task-info">
+            <div class="popup-task-title">${pName}</div>
+            <div class="popup-task-sub">${pCount} task${pCount!==1?'s':''}</div>
+          </div>
+          ${canEdit?`<span class="mi mi-sm" style="color:var(--p);cursor:pointer;" onclick="event.stopPropagation();editProject('${cmCoId}','${d.replace(/'/g,"\\'")}','${pName.replace(/'/g,"\\'")}');renderCmTree()">edit</span>
+          <span class="mi mi-sm" style="color:var(--danger);cursor:pointer;" onclick="event.stopPropagation();removeProject('${cmCoId}','${d.replace(/'/g,"\\'")}','${pName.replace(/'/g,"\\'")}');renderCmTree()">delete</span>`
+          :`<span style="font-size:10px;color:var(--t3);">in use</span>`}
+        </div>`;
+      });
+    });
+    el.innerHTML=html||'<div style="font-size:13px;color:var(--t3);padding:12px 0;">No departments</div>';
+  }
+}
+
+async function cmAddDept(){
+  if(!cmCoId) return;
+  const name=prompt('New department name:');
+  if(!name||!name.trim()) return;
+  const n=name.trim();
+  if(!DEPTS[cmCoId]) DEPTS[cmCoId]=[];
+  if(DEPTS[cmCoId].includes(n)){toast('Department exists');return;}
+  DEPTS[cmCoId].push(n);
+  await saveCompanies();
+  renderCmTree();
+  openCoManager(cmCoId);
+  toast(`${n} added`);
+}
+
+async function cmAddProj(){
+  if(!cmCoId) return;
+  const deptList=DEPTS[cmCoId]||[];
+  if(!deptList.length){toast('Add a department first');return;}
+  let dept;
+  if(deptList.length===1){
+    dept=deptList[0];
+  } else {
+    dept=prompt('Which department?\n'+deptList.map((d,i)=>`${i+1}. ${d}`).join('\n')+'\n\nEnter number or name:');
+    if(!dept) return;
+    const num=parseInt(dept);
+    if(num>=1&&num<=deptList.length) dept=deptList[num-1];
+    else dept=deptList.find(d=>d.toLowerCase()===dept.trim().toLowerCase());
+    if(!dept){toast('Department not found');return;}
+  }
+  const name=prompt(`New project name in ${dept}:`);
+  if(!name||!name.trim()) return;
+  await addProject(cmCoId,dept,name.trim());
+  renderCmTree();
+  openCoManager(cmCoId);
+  toast(`${name.trim()} added to ${dept}`);
 }
 
 // ══════════════════════════════════════════════════════
@@ -1630,7 +1849,7 @@ function renderHome(){
     card.className=`co-card ${urgCls}`;
     card.onclick=()=>openPopup(coId);
     card.innerHTML=`
-      <div class="co-name" style="color:${co.clr}">${co.name}</div>
+      <div class="co-name" style="color:${co.clr};cursor:pointer;" onclick="event.stopPropagation();openCoManager('${coId}')">${co.name}</div>
       <div class="co-meta">${co.label||''} · ${coTasks.length} open</div>
       <div class="co-tasks">${taskRows}</div>
       <div class="co-footer">
@@ -2133,6 +2352,13 @@ function openStatusPopup(filter){
   document.getElementById('popup-view-btn').textContent='View All →';
   document.getElementById('popup-view-btn').onclick=()=>{
     closePopup();
+    // Map popup filter to bullet value
+    const bulletMap={overdue:'overdue',week:'',inprogress:'inprogress',done:''};
+    const bulletVal=bulletMap[filter]||'';
+    tlState.bullet=bulletVal;
+    document.querySelectorAll('.tl-bullet').forEach(b=>{
+      b.classList.toggle('on',b.dataset.val===bulletVal);
+    });
     nav('tasks');
   };
   renderPopupTasks();
