@@ -47,9 +47,6 @@ body{font-family:-apple-system,'SF Pro Display','Helvetica Neue',sans-serif;colo
 .hdr-row{display:flex;align-items:flex-end;justify-content:space-between;padding-bottom:12px;}
 .hdr-title{font-size:28px;font-weight:700;letter-spacing:-.5px;}
 .hdr-avatar{width:36px;height:36px;background:var(--p);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:700;color:#fff;cursor:pointer;flex-shrink:0;}
-.seg-ctrl{display:flex;background:var(--surface2);border-radius:10px;padding:2px;margin-bottom:12px;}
-.seg-btn{flex:1;padding:6px 2px;text-align:center;font-size:12px;font-weight:500;color:var(--t2);border:none;background:none;border-radius:8px;cursor:pointer;}
-.seg-btn.on{background:var(--surface);color:var(--t1);font-weight:600;box-shadow:0 1px 3px rgba(0,0,0,.1);}
 
 .scroll{flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch;}
 .scroll::-webkit-scrollbar{display:none;}
@@ -81,12 +78,7 @@ body{font-family:-apple-system,'SF Pro Display','Helvetica Neue',sans-serif;colo
 .co-card.u-warn{border-bottom-color:var(--warn);}
 .co-card.u-ok{border-bottom-color:var(--success);}
 .co-card.u-muted{border-bottom-color:var(--t3);}
-.co-top{display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;}
-.co-tag{font-size:10px;font-weight:600;padding:2px 8px;border-radius:20px;border:1px solid var(--border2);color:var(--t2);}
-.co-menu{color:var(--t3);display:flex;align-items:center;}
 .co-name{font-size:15px;font-weight:700;letter-spacing:-.2px;margin-bottom:2px;}
-.cn-rubii{color:var(--co-rubii);}.cn-dc{color:var(--co-dc);}.cn-conts{color:var(--co-conts);}
-.cn-hookka{color:var(--co-hookka);}.cn-gh{color:var(--co-gh);}.cn-carres{color:var(--co-carres);}
 .co-meta{font-size:11px;color:var(--t2);margin-bottom:8px;}
 .co-tasks{flex:1;}
 .co-task-row{font-size:12px;color:var(--t2);padding:4px 0;border-top:1px solid var(--border);display:flex;align-items:center;gap:6px;line-height:1.3;}
@@ -96,7 +88,6 @@ body{font-family:-apple-system,'SF Pro Display','Helvetica Neue',sans-serif;colo
 .co-footer{display:flex;align-items:center;justify-content:space-between;padding:8px 0 10px;margin-top:auto;}
 .co-overdue{font-size:11px;font-weight:600;color:var(--danger);}
 .co-overdue.none{color:var(--t3);font-weight:400;}
-.co-next{font-size:11px;color:var(--t2);}
 
 /* ── POPUP ── */
 .ov{display:none;position:fixed;inset:0;background:rgba(0,0,0,.4);z-index:100;align-items:flex-end;justify-content:center;}
@@ -126,7 +117,9 @@ body{font-family:-apple-system,'SF Pro Display','Helvetica Neue',sans-serif;colo
 .k-scroll{display:flex;gap:12px;padding:12px 16px 16px;overflow-x:auto;scrollbar-width:none;}
 .k-scroll::-webkit-scrollbar{display:none;}
 .k-col{min-width:210px;flex-shrink:0;}
-.k-hdr{display:flex;align-items:center;gap:6px;margin-bottom:10px;}
+.k-col.dimmed .k-card{display:none;}
+.k-col.dimmed .k-hdr{opacity:.35;}
+.k-hdr{display:flex;align-items:center;gap:6px;margin-bottom:10px;cursor:pointer;user-select:none;}
 .k-hdr-dot{width:8px;height:8px;border-radius:50%;}
 .k-hdr-lbl{font-size:13px;font-weight:700;}
 .k-hdr-n{font-size:12px;font-weight:600;background:var(--surface2);color:var(--t2);padding:2px 7px;border-radius:20px;}
@@ -144,9 +137,6 @@ body{font-family:-apple-system,'SF Pro Display','Helvetica Neue',sans-serif;colo
 .kp-w .k-prog-fill{background:var(--warn);}
 .kp-g .k-prog-fill{background:var(--success);}
 .kp-m .k-prog-fill{background:var(--t3);}
-.kco-rubii{color:var(--co-rubii)!important;}.kco-dc{color:var(--co-dc)!important;}
-.kco-conts{color:var(--co-conts)!important;}.kco-hookka{color:var(--co-hookka)!important;}
-.kco-gh{color:var(--co-gh)!important;}.kco-group{color:var(--t2)!important;}
 
 /* ── DEADLINE ── */
 .dl-toggle{display:flex;background:var(--surface2);border-radius:10px;padding:2px;margin:14px 16px 0;}
@@ -356,7 +346,6 @@ textarea.f-inp{resize:none;min-height:72px;}
 .tl-row-dept{font-size:11px;color:var(--t2);}
 .tl-row-due{font-size:11px;font-weight:500;margin-left:auto;flex-shrink:0;}
 .tl-row-due.over{color:var(--danger);}.tl-row-due.soon{color:var(--warn);}
-.tl-del-bg{position:absolute;right:0;top:0;bottom:0;width:70px;background:var(--danger);display:flex;align-items:center;justify-content:center;border-radius:0 var(--r-sm) var(--r-sm) 0;cursor:pointer;}
 .tl-prio-bar{width:3px;border-radius:4px;height:32px;flex-shrink:0;}
 .pb-d{background:var(--danger);}.pb-w{background:var(--warn);}.pb-g{background:var(--success);}
 
@@ -370,15 +359,8 @@ textarea.f-inp{resize:none;min-height:72px;}
 <!-- HEADER -->
 <div class="hdr">
   <div class="hdr-row">
-    <div class="hdr-title" id="hdr-title">Overview</div>
+    <div class="hdr-title" id="hdr-title">Company</div>
     <div class="hdr-avatar" onclick="openSettings()">R</div>
-  </div>
-  <div class="seg-ctrl">
-    <button class="seg-btn on" onclick="nav('home')">Companies</button>
-    <button class="seg-btn" onclick="nav('kanban')">Kanban</button>
-    <button class="seg-btn" onclick="nav('tasks')">Tasks</button>
-    <button class="seg-btn" onclick="nav('deadline')">Deadline</button>
-    <button class="seg-btn" onclick="nav('weekly')">Weekly</button>
   </div>
 </div>
 
@@ -393,7 +375,7 @@ textarea.f-inp{resize:none;min-height:72px;}
       <div class="sum-c"><div class="sum-v c-p" id="s-prog">—</div><div class="sum-l">In Progress</div></div>
       <div class="sum-c"><div class="sum-v c-s" id="s-done">—</div><div class="sum-l">Done</div></div>
     </div>
-    <div class="sec">Companies</div>
+    <div class="sec">Company</div>
     <div class="co-grid" id="co-grid"></div>
   </div>
 
@@ -402,12 +384,6 @@ textarea.f-inp{resize:none;min-height:72px;}
     <div class="k-filter-bar">
       <select class="k-filter-sel" id="k-co-filter" onchange="renderKanban()">
         <option value="">All Companies</option>
-        <option value="rubii">Rubii</option>
-        <option value="dc">Dream Crafter</option>
-        <option value="conts">The Conts</option>
-        <option value="hookka">Hookka</option>
-        <option value="gh">Golden Home</option>
-        <option value="carres">Carres</option>
       </select>
     </div>
     <div class="k-scroll" id="k-scroll"></div>
@@ -428,12 +404,6 @@ textarea.f-inp{resize:none;min-height:72px;}
       <div class="tl-filter-row">
         <select class="tl-co-sel" id="tl-co-sel" onchange="onCoChange()">
           <option value="">All Companies</option>
-          <option value="rubii">Rubii</option>
-          <option value="dc">Dream Crafter</option>
-          <option value="conts">The Conts</option>
-          <option value="hookka">Hookka</option>
-          <option value="gh">Golden Home</option>
-          <option value="carres">Carres</option>
         </select>
         <select class="tl-co-sel" id="tl-dept-sel" onchange="onDeptChange()">
           <option value="">All Depts</option>
@@ -481,12 +451,6 @@ textarea.f-inp{resize:none;min-height:72px;}
     <div style="padding:12px 16px 0;">
       <select class="tl-co-sel" id="dl-co-sel" onchange="onDlCoChange()" style="width:100%;">
         <option value="">All Companies</option>
-        <option value="rubii">Rubii</option>
-        <option value="dc">Dream Crafter</option>
-        <option value="conts">The Conts</option>
-        <option value="hookka">Hookka</option>
-        <option value="gh">Golden Home</option>
-        <option value="carres">Carres</option>
       </select>
     </div>
 
@@ -521,8 +485,9 @@ textarea.f-inp{resize:none;min-height:72px;}
 
 <!-- BOTTOM NAV -->
 <div class="bnav">
-  <div class="bnav-item on" id="bn-home" onclick="nav('home')"><span class="mi bnav-icon">domain</span><div class="bnav-lbl">Companies</div></div>
+  <div class="bnav-item on" id="bn-home" onclick="nav('home')"><span class="mi bnav-icon">domain</span><div class="bnav-lbl">Company</div></div>
   <div class="bnav-item" id="bn-kanban" onclick="nav('kanban')"><span class="mi bnav-icon">view_kanban</span><div class="bnav-lbl">Kanban</div></div>
+  <div class="bnav-item" id="bn-tasks" onclick="nav('tasks')"><span class="mi bnav-icon">checklist</span><div class="bnav-lbl">Tasks</div></div>
   <div class="bnav-item" id="bn-deadline" onclick="nav('deadline')"><span class="mi bnav-icon">event</span><div class="bnav-lbl">Deadline</div></div>
   <div class="bnav-item" id="bn-weekly" onclick="nav('weekly')"><span class="mi bnav-icon">bar_chart</span><div class="bnav-lbl">Weekly</div></div>
 </div>
@@ -556,12 +521,6 @@ textarea.f-inp{resize:none;min-height:72px;}
     <div class="f-g"><label class="f-lbl">Company *</label>
       <select class="f-sel" id="f-co" onchange="onFormCoChange()">
         <option value="">Select…</option>
-        <option value="rubii">Rubii</option>
-        <option value="dc">Dream Crafter</option>
-        <option value="conts">The Conts</option>
-        <option value="hookka">Hookka</option>
-        <option value="gh">Golden Home</option>
-        <option value="carres">Carres</option>
       </select>
     </div>
 
@@ -685,6 +644,16 @@ textarea.f-inp{resize:none;min-height:72px;}
       <span id="sync-btn-text">Sync to Google Sheets</span>
     </button>
 
+    <div class="set-section">Company</div>
+    <div id="set-co-list"></div>
+    <div class="set-row" style="flex-direction:column;align-items:stretch;">
+      <div style="font-size:13px;font-weight:600;margin-bottom:8px;">Add Company</div>
+      <input class="f-new-inp" id="set-co-new-name" type="text" placeholder="Company name" style="margin-bottom:6px;"/>
+      <input class="f-new-inp" id="set-co-new-label" type="text" placeholder="Label (e.g. Marketing)" style="margin-bottom:6px;"/>
+      <input class="f-new-inp" id="set-co-new-depts" type="text" placeholder="Departments (comma separated)" style="margin-bottom:8px;"/>
+      <div class="f-new-btn" style="text-align:center;padding:10px;" onclick="addCompany()">Add Company</div>
+    </div>
+
     <div class="set-section">Data</div>
     <div class="set-row">
       <div class="set-icon" style="background:var(--p)"><span class="mi">storage</span></div>
@@ -694,7 +663,7 @@ textarea.f-inp{resize:none;min-height:72px;}
       </div>
     </div>
 
-    <div class="set-footer">Task Tracker PWA v1.1<br/>Single-user · Offline-first</div>
+    <div class="set-footer">Task Tracker PWA v1.3<br/>Single-user · Offline-first</div>
   </div>
 </div>
 
@@ -705,18 +674,17 @@ textarea.f-inp{resize:none;min-height:72px;}
 // ══════════════════════════════════════════════════════
 // CONSTANTS
 // ══════════════════════════════════════════════════════
-const DB_NAME='TaskTrackerDB', DB_VER=3, STORE='tasks', CFG_STORE='config', PROJ_STORE='projects';
+const DB_NAME='TaskTrackerDB', DB_VER=4, STORE='tasks', CFG_STORE='config', PROJ_STORE='projects', COMP_STORE='companies';
 
-const COMPANIES={
-  rubii:{name:'Rubii',label:'Marketing',triage:'Accelerate',urgency:'u-danger',clr:'var(--co-rubii)',nameClass:'cn-rubii',order:0},
-  dc:{name:'Dream Crafter',label:'Interior Design',triage:'Accelerate',urgency:'u-ok',clr:'var(--co-dc)',nameClass:'cn-dc',order:1},
-  conts:{name:'The Conts',label:'Property Mgmt',triage:'Maintain ⚠',urgency:'u-warn',clr:'var(--co-conts)',nameClass:'cn-conts',order:2},
-  hookka:{name:'Hookka',label:'Furniture',triage:'Maintain',urgency:'u-ok',clr:'var(--co-hookka)',nameClass:'cn-hookka',order:3},
-  gh:{name:'Golden Home',label:'Distribution',triage:'Sprint',urgency:'u-muted',clr:'var(--co-gh)',nameClass:'cn-gh',order:4},
-  carres:{name:'Carres',label:'Product/Brand',triage:'Pause',urgency:'u-muted',clr:'var(--co-carres)',nameClass:'cn-carres',order:5}
+const DEFAULT_COMPANIES={
+  rubii:{name:'Rubii',label:'Marketing',clr:'var(--co-rubii)',order:0},
+  dc:{name:'Dream Crafter',label:'Interior Design',clr:'var(--co-dc)',order:1},
+  conts:{name:'The Conts',label:'Property Mgmt',clr:'var(--co-conts)',order:2},
+  hookka:{name:'Hookka',label:'Furniture',clr:'var(--co-hookka)',order:3},
+  gh:{name:'Golden Home',label:'Distribution',clr:'var(--co-gh)',order:4},
+  carres:{name:'Carres',label:'Product/Brand',clr:'var(--co-carres)',order:5}
 };
-
-const DEPTS={
+const DEFAULT_DEPTS={
   rubii:['Account Management','Creative','Influencer Relations','Operations','Finance'],
   dc:['Design','Production','Sales','Operations','Finance'],
   conts:['Leasing','Maintenance','Admin','CS','Finance','Operations'],
@@ -724,6 +692,9 @@ const DEPTS={
   gh:['Sales','Operations','Finance'],
   carres:['Sales','Marketing','CS','Logistics','Finance']
 };
+
+let COMPANIES=JSON.parse(JSON.stringify(DEFAULT_COMPANIES));
+let DEPTS=JSON.parse(JSON.stringify(DEFAULT_DEPTS));
 
 const STATUS_LABELS={todo:'To Do',inprogress:'In Progress',done:'Done',overdue:'Overdue'};
 const PRIO_LABELS={d:'High',w:'Med',g:'Low'};
@@ -733,6 +704,7 @@ const PRIO_LABELS={d:'High',w:'Med',g:'Low'};
 // ══════════════════════════════════════════════════════
 let db=null, tasks=[], currentView='home', editingId=null, currentPrio='d', detailId=null, popupCo=null, kanbanFilter='';
 let config={gasUrl:'',lastSync:null};
+const kanbanHidden=new Set();
 
 // ══════════════════════════════════════════════════════
 // INDEXEDDB
@@ -753,6 +725,9 @@ function openDB(){
       }
       if(!d.objectStoreNames.contains(PROJ_STORE)){
         d.createObjectStore(PROJ_STORE,{keyPath:'key'});
+      }
+      if(!d.objectStoreNames.contains(COMP_STORE)){
+        d.createObjectStore(COMP_STORE,{keyPath:'key'});
       }
     };
     req.onsuccess=e=>{res(e.target.result);};
@@ -901,6 +876,148 @@ function checkHighPriority(){
 }
 
 // ══════════════════════════════════════════════════════
+// COMPANY MANAGEMENT
+// ══════════════════════════════════════════════════════
+const EXTRA_COLORS=['#E65100','#1565C0','#2E7D32','#6A1B9A','#AD1457','#00695C','#4527A0','#BF360C','#0277BD','#558B2F'];
+
+async function loadCompanies(){
+  return new Promise((res,rej)=>{
+    const tx=db.transaction(COMP_STORE,'readonly');
+    const req=tx.objectStore(COMP_STORE).get('data');
+    req.onsuccess=e=>{
+      const d=e.target.result;
+      if(d){
+        COMPANIES=d.companies||JSON.parse(JSON.stringify(DEFAULT_COMPANIES));
+        DEPTS=d.depts||JSON.parse(JSON.stringify(DEFAULT_DEPTS));
+      }
+      res();
+    };
+    req.onerror=e=>rej(e.target.error);
+  });
+}
+
+async function saveCompanies(){
+  return new Promise((res,rej)=>{
+    const tx=db.transaction(COMP_STORE,'readwrite');
+    const req=tx.objectStore(COMP_STORE).put({key:'data',companies:COMPANIES,depts:DEPTS});
+    req.onsuccess=()=>res();
+    req.onerror=e=>rej(e.target.error);
+  });
+}
+
+function makeCoId(name){
+  return name.toLowerCase().replace(/[^a-z0-9]/g,'').slice(0,12)||'co'+Date.now();
+}
+
+function nextColor(){
+  const used=new Set(Object.values(COMPANIES).map(c=>c.clr));
+  const all=[...EXTRA_COLORS,'var(--co-rubii)','var(--co-dc)','var(--co-conts)','var(--co-hookka)','var(--co-gh)','var(--co-carres)'];
+  return all.find(c=>!used.has(c))||EXTRA_COLORS[Math.floor(Math.random()*EXTRA_COLORS.length)];
+}
+
+function buildCompanyOptions(){
+  return Object.keys(COMPANIES).sort((a,b)=>(COMPANIES[a].order||0)-(COMPANIES[b].order||0))
+    .map(k=>`<option value="${k}">${COMPANIES[k].name}</option>`).join('');
+}
+
+function rebuildAllDropdowns(){
+  const opts=buildCompanyOptions();
+  // Form
+  const fco=document.getElementById('f-co');
+  const fval=fco.value;
+  fco.innerHTML='<option value="">Select…</option>'+opts;
+  if(fval) fco.value=fval;
+  // Kanban
+  const kco=document.getElementById('k-co-filter');
+  const kval=kco.value;
+  kco.innerHTML='<option value="">All Companies</option>'+opts;
+  if(kval) kco.value=kval;
+  // Tasks
+  const tco=document.getElementById('tl-co-sel');
+  const tval=tco.value;
+  tco.innerHTML='<option value="">All Companies</option>'+opts;
+  if(tval) tco.value=tval;
+  // Deadline
+  const dco=document.getElementById('dl-co-sel');
+  const dval=dco.value;
+  dco.innerHTML='<option value="">All Companies</option>'+opts;
+  if(dval) dco.value=dval;
+}
+
+function renderCompanyManager(){
+  const el=document.getElementById('set-co-list');
+  const keys=Object.keys(COMPANIES).sort((a,b)=>(COMPANIES[a].order||0)-(COMPANIES[b].order||0));
+  el.innerHTML=keys.map(k=>{
+    const c=COMPANIES[k];
+    const depts=(DEPTS[k]||[]).join(', ');
+    return `<div class="set-row" style="flex-direction:column;align-items:stretch;">
+      <div style="display:flex;align-items:center;gap:10px;">
+        <div style="width:10px;height:10px;border-radius:50%;background:${c.clr};flex-shrink:0;"></div>
+        <div style="flex:1;min-width:0;">
+          <div class="set-info-label">${c.name}</div>
+          <div class="set-info-sub">${c.label||''} · ${(DEPTS[k]||[]).length} depts</div>
+        </div>
+        <span class="mi mi-sm" style="color:var(--p);cursor:pointer;" onclick="editCompany('${k}')">edit</span>
+        <span class="mi mi-sm" style="color:var(--danger);cursor:pointer;" onclick="removeCompany('${k}')">delete</span>
+      </div>
+      <div style="font-size:11px;color:var(--t3);margin-top:4px;">${depts||'No departments'}</div>
+    </div>`;
+  }).join('');
+}
+
+async function addCompany(){
+  const name=document.getElementById('set-co-new-name').value.trim();
+  const label=document.getElementById('set-co-new-label').value.trim();
+  const deptsStr=document.getElementById('set-co-new-depts').value.trim();
+  if(!name){toast('Company name required');return;}
+  const id=makeCoId(name);
+  if(COMPANIES[id]){toast('Company ID conflict — use a different name');return;}
+  COMPANIES[id]={name,label:label||'',clr:nextColor(),order:Object.keys(COMPANIES).length};
+  DEPTS[id]=deptsStr?deptsStr.split(',').map(d=>d.trim()).filter(Boolean):['Operations','Finance'];
+  await saveCompanies();
+  rebuildAllDropdowns();
+  renderCompanyManager();
+  renderAll();
+  document.getElementById('set-co-new-name').value='';
+  document.getElementById('set-co-new-label').value='';
+  document.getElementById('set-co-new-depts').value='';
+  toast(`${name} added`);
+}
+
+function editCompany(id){
+  const c=COMPANIES[id];
+  if(!c) return;
+  const name=prompt('Company name:',c.name);
+  if(name===null) return;
+  const label=prompt('Label (e.g. Marketing):',c.label||'');
+  if(label===null) return;
+  const deptsStr=prompt('Departments (comma separated):',(DEPTS[id]||[]).join(', '));
+  if(deptsStr===null) return;
+  c.name=name.trim()||c.name;
+  c.label=label.trim();
+  DEPTS[id]=deptsStr.split(',').map(d=>d.trim()).filter(Boolean);
+  saveCompanies();
+  rebuildAllDropdowns();
+  renderCompanyManager();
+  renderAll();
+  toast(`${c.name} updated`);
+}
+
+async function removeCompany(id){
+  const c=COMPANIES[id];
+  if(!c) return;
+  const count=tasks.filter(t=>t.company===id).length;
+  if(!confirm(`Delete ${c.name}?${count?' '+count+' tasks will become orphaned.':''}`)){ return;}
+  delete COMPANIES[id];
+  delete DEPTS[id];
+  await saveCompanies();
+  rebuildAllDropdowns();
+  renderCompanyManager();
+  renderAll();
+  toast(`${c.name} removed`);
+}
+
+// ══════════════════════════════════════════════════════
 // SETTINGS PANEL
 // ══════════════════════════════════════════════════════
 function openSettings(){
@@ -908,6 +1025,7 @@ function openSettings(){
   document.getElementById('set-task-count').textContent=`${tasks.length} tasks`;
   document.getElementById('sync-btn').disabled=!config.gasUrl;
   updateSyncStatus();
+  renderCompanyManager();
   document.getElementById('set-ov').classList.add('on');
 }
 function closeSettings(){document.getElementById('set-ov').classList.remove('on');}
@@ -1074,7 +1192,9 @@ async function init(){
   try{
     db=await openDB();
     await loadConfig();
+    await loadCompanies();
     await loadAllProjects();
+    rebuildAllDropdowns();
     let existing=await getAllTasks();
     if(existing.length===0){
       // First run — seed data
@@ -1141,9 +1261,6 @@ function getUrgencyFoot(task){
   if(task.priority==='w') return {cls:'kw',label:'● Med'};
   return {cls:'kg',label:'● Low'};
 }
-function coKlass(co){
-  return 'kco-'+co;
-}
 function genId(){return 't'+Date.now().toString(36)+Math.random().toString(36).slice(2,6);}
 
 function toast(msg){
@@ -1170,16 +1287,17 @@ function renderHome(){
   renderSummary();
   const grid=document.getElementById('co-grid');
   grid.innerHTML='';
-  const coOrder=['rubii','dc','conts','hookka','gh','carres'];
+  const coOrder=Object.keys(COMPANIES).sort((a,b)=>(COMPANIES[a].order||0)-(COMPANIES[b].order||0));
   coOrder.forEach(coId=>{
     const co=COMPANIES[coId];
     const coTasks=tasks.filter(t=>t.company===coId&&t.status!=='done');
     const overdue=coTasks.filter(t=>t.status==='overdue');
-    const nearest=coTasks.filter(t=>t.deadline).sort((a,b)=>a.deadline.localeCompare(b.deadline))[0];
     const top3=coTasks.slice(0,3);
 
+    // Urgency border based on task state
+    const urgCls=overdue.length?'u-danger':coTasks.some(t=>isThisWeek(t.deadline))?'u-warn':'u-ok';
+
     const taskRows=top3.length?top3.map(t=>{
-      const dot=t.status==='overdue'?'dot-d':isThisWeek(t.deadline)?'dot-w':'dot-ok';
       const chkIcon=t.status==='done'?'check_circle':'radio_button_unchecked';
       return `<div class="co-task-row">
         <span class="mi mi-xs" style="color:${t.status==='done'?'var(--success)':t.status==='overdue'?'var(--danger)':'var(--t3)'};cursor:pointer;flex-shrink:0;" onclick="event.stopPropagation();quickToggle('${t.id}')">${chkIcon}</span>
@@ -1188,16 +1306,14 @@ function renderHome(){
     }).join(''):`<div class="co-task-row" style="color:var(--t3)">No open tasks</div>`;
 
     const card=document.createElement('div');
-    card.className=`co-card ${co.urgency}`;
+    card.className=`co-card ${urgCls}`;
     card.onclick=()=>openPopup(coId);
     card.innerHTML=`
-      <div class="co-top"><span class="co-tag">${co.triage}</span><span class="co-menu"><span class="mi mi-sm">more_horiz</span></span></div>
-      <div class="co-name ${co.nameClass}">${co.name}</div>
-      <div class="co-meta">${co.label} · ${coTasks.length} open</div>
+      <div class="co-name" style="color:${co.clr}">${co.name}</div>
+      <div class="co-meta">${co.label||''} · ${coTasks.length} open</div>
       <div class="co-tasks">${taskRows}</div>
       <div class="co-footer">
         <span class="co-overdue ${overdue.length?'':'none'}">${overdue.length?overdue.length+' overdue':'—'}</span>
-        <span class="co-next">${nearest?fmtDate(nearest.deadline):'—'}</span>
       </div>`;
     grid.appendChild(card);
   });
@@ -1229,8 +1345,9 @@ function renderKanban(){
   cols.forEach(col=>{
     let colTasks=tasks.filter(t=>t.status===col.id);
     if(kanbanFilter) colTasks=colTasks.filter(t=>t.company===kanbanFilter);
+    const dimmed=kanbanHidden.has(col.id);
     const colEl=document.createElement('div');
-    colEl.className='k-col';
+    colEl.className='k-col'+(dimmed?' dimmed':'');
     const cards=colTasks.length?colTasks.map(t=>{
       const urg=getUrgencyClass(t);
       const foot=getUrgencyFoot(t);
@@ -1240,7 +1357,7 @@ function renderKanban(){
       const subLabel=subs.length?`<span style="font-size:10px;color:var(--t3);margin-left:4px;">${subs.filter(s=>s.done).length}/${subs.length}</span>`:'';
       return `<div class="k-card ${urg}" onclick="openDetail('${t.id}')">
         <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px;">
-          <div class="k-co ${coKlass(t.company)}">${co?.name||t.company}</div>
+          <div class="k-co" style="color:${co?.clr||'var(--t2)'}">${co?.name||t.company}</div>
           <span class="mi mi-xs" style="color:${t.status==='done'?'var(--success)':'var(--t3)'};cursor:pointer;" onclick="event.stopPropagation();quickToggle('${t.id}')">${t.status==='done'?'check_circle':'radio_button_unchecked'}</span>
         </div>
         <div class="k-title">${t.title}${subLabel}</div>
@@ -1256,10 +1373,16 @@ function renderKanban(){
     }).join(''):`<div style="font-size:12px;color:var(--t3);padding:8px 2px;">No tasks</div>`;
 
     colEl.innerHTML=`
-      <div class="k-hdr"><div class="k-hdr-dot" style="background:${col.dot}"></div><div class="k-hdr-lbl">${col.label}</div><div class="k-hdr-n">${colTasks.length}</div></div>
+      <div class="k-hdr" onclick="toggleKanbanCol('${col.id}')"><div class="k-hdr-dot" style="background:${col.dot}"></div><div class="k-hdr-lbl">${col.label}</div><div class="k-hdr-n">${colTasks.length}</div></div>
       ${cards}`;
     scroll.appendChild(colEl);
   });
+}
+
+function toggleKanbanCol(colId){
+  if(kanbanHidden.has(colId)) kanbanHidden.delete(colId);
+  else kanbanHidden.add(colId);
+  renderKanban();
 }
 
 // ══════════════════════════════════════════════════════
@@ -1433,10 +1556,8 @@ function nav(v){
   currentView=v;
   document.querySelectorAll('.view').forEach(el=>el.classList.remove('on'));
   document.getElementById('v-'+v).classList.add('on');
-  const titles={home:'Overview',kanban:'Kanban',tasks:'All Tasks',deadline:'Deadline',weekly:'This Week'};
+  const titles={home:'Company',kanban:'Kanban',tasks:'All Tasks',deadline:'Deadline',weekly:'This Week'};
   document.getElementById('hdr-title').textContent=titles[v]||v;
-  const vOrder=['home','kanban','tasks','deadline','weekly'];
-  document.querySelectorAll('.seg-btn').forEach((b,i)=>b.classList.toggle('on',i===vOrder.indexOf(v)));
   document.querySelectorAll('.bnav-item').forEach(n=>{
     n.classList.remove('on');
     n.querySelector('.bnav-lbl').style.color='';
@@ -1584,7 +1705,6 @@ function renderTasksList(){
       if(t.deadline) metaParts.push(`<span class="tl-row-due ${dueCls}">${fmtDate(t.deadline)}</span>`);
 
       html+=`<div class="tl-row" id="tr-${t.id}" data-id="${t.id}" onclick="${bulkMode?`toggleBulkSel('${t.id}')`:`openDetail('${t.id}')`}">
-        <div class="tl-del-bg" onclick="event.stopPropagation();confirmSwipeDel('${t.id}')"><span class="mi" style="color:#fff">delete</span></div>
         ${bulkMode
           ?`<div class="tl-sel-chk ${selOn?'on':''}" onclick="event.stopPropagation();toggleBulkSel('${t.id}')">
               <span class="mi mi-xs" style="color:#fff;display:${selOn?'flex':'none'}">check</span>
@@ -1603,60 +1723,7 @@ function renderTasksList(){
   });
 
   el.innerHTML=html;
-  if(!bulkMode) el.querySelectorAll('.tl-row').forEach(row=>attachSwipe(row));
 }
-
-// ── TWO-STAGE SWIPE TO DELETE ──
-let swipeOpenRow=null; // track which row is currently revealed
-
-function attachSwipe(row){
-  let startX=0, curX=0, swiping=false;
-  row.addEventListener('touchstart',e=>{
-    startX=e.touches[0].clientX;
-    curX=startX;
-    swiping=false;
-  },{passive:true});
-  row.addEventListener('touchmove',e=>{
-    curX=e.touches[0].clientX;
-    const dx=Math.max(startX-curX,0);
-    if(dx>8) swiping=true;
-    row.style.transform=dx>8?`translateX(-${Math.min(dx,70)}px)`:'';
-  },{passive:true});
-  row.addEventListener('touchend',()=>{
-    const dx=startX-curX;
-    if(dx>40){
-      // First swipe — reveal delete button
-      row.style.transform='translateX(-70px)';
-      if(swipeOpenRow&&swipeOpenRow!==row) swipeOpenRow.style.transform='';
-      swipeOpenRow=row;
-    } else {
-      row.style.transform='';
-      if(swipeOpenRow===row) swipeOpenRow=null;
-    }
-  });
-}
-
-// Tapping the revealed delete button confirms
-async function confirmSwipeDel(id){
-  if(confirm('Delete this task?')){
-    await removeTask(id);
-    tasks=tasks.filter(t=>t.id!==id);
-    swipeOpenRow=null;
-    renderTasksList(); renderAll(); toast('Task deleted');
-  } else {
-    const row=document.getElementById('tr-'+id);
-    if(row) row.style.transform='';
-    swipeOpenRow=null;
-  }
-}
-
-// Close any open swipe when tapping elsewhere
-document.addEventListener('touchstart',e=>{
-  if(swipeOpenRow&&!swipeOpenRow.contains(e.target)){
-    swipeOpenRow.style.transform='';
-    swipeOpenRow=null;
-  }
-},{passive:true});
 
 // ── BULK SELECT ──
 function enterBulk(){
@@ -2078,7 +2145,10 @@ async function saveTask(){
 // SERVICE WORKER (external)
 // ══════════════════════════════════════════════════════
 if('serviceWorker' in navigator){
-  navigator.serviceWorker.register('./sw.js').catch(()=>{});
+  navigator.serviceWorker.register('./sw.js').then(reg=>{
+    // Check for updates on every load
+    reg.update();
+  }).catch(()=>{});
 }
 
 // ══════════════════════════════════════════════════════
