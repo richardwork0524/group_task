@@ -1,0 +1,1765 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover"/>
+<meta name="theme-color" content="#007AFF"/>
+<meta name="apple-mobile-web-app-capable" content="yes"/>
+<meta name="apple-mobile-web-app-status-bar-style" content="default"/>
+<meta name="apple-mobile-web-app-title" content="Tasks"/>
+<link rel="manifest" href="./manifest.json"/>
+<title>Task Tracker</title>
+<link href="https://fonts.googleapis.com/icon?family=Material+Icons+Outlined" rel="stylesheet"/>
+<style>
+.mi{font-family:'Material Icons Outlined';font-style:normal;font-weight:400;font-size:22px;line-height:1;display:inline-flex;align-items:center;justify-content:center;user-select:none;}
+.mi-sm{font-size:16px;} .mi-xs{font-size:14px;} .mi-lg{font-size:28px;}
+
+:root{
+  --p:#007AFF;--p-light:#E8F1FF;
+  --bg:#F2F2F7;--surface:#FFFFFF;--surface2:#F2F2F7;
+  --border:#E5E5EA;--border2:#D1D1D6;
+  --t1:#000000;--t2:#6E6E73;--t3:#AEAEB2;
+  --success:#34C759;--warn:#FF9500;--danger:#FF3B30;
+  --r:14px;--r-sm:10px;
+  --shadow:0 2px 8px rgba(0,0,0,0.08);
+  --shadow-lg:0 8px 24px rgba(0,0,0,0.12);
+  --safe-bottom:env(safe-area-inset-bottom,0px);
+  --co-rubii:#5856D6;--co-dc:#00897B;--co-conts:#C2185B;
+  --co-hookka:#546E7A;--co-gh:#8E44AD;--co-carres:#0097A7;
+}
+@media(prefers-color-scheme:dark){:root{
+  --p:#0A84FF;--bg:#000;--surface:#1C1C1E;--surface2:#2C2C2E;
+  --border:#38383A;--border2:#48484A;
+  --t1:#FFF;--t2:#AEAEB2;--t3:#6E6E73;
+  --success:#30D158;--warn:#FF9F0A;--danger:#FF453A;
+  --shadow:0 2px 8px rgba(0,0,0,0.4);--shadow-lg:0 8px 24px rgba(0,0,0,0.6);
+  --co-rubii:#7B79FF;--co-dc:#26A69A;--co-conts:#E91E8C;
+  --co-hookka:#90A4AE;--co-gh:#BA68C8;--co-carres:#26C6DA;
+}}
+
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent;}
+html,body{height:100%;background:var(--bg);overflow:hidden;}
+body{font-family:-apple-system,'SF Pro Display','Helvetica Neue',sans-serif;color:var(--t1);font-size:16px;line-height:1.5;}
+
+/* ── SHELL ── */
+.app{display:flex;flex-direction:column;height:100vh;height:100dvh;max-width:430px;margin:0 auto;background:var(--bg);position:relative;}
+.hdr{background:var(--surface);padding:52px 20px 0;border-bottom:1px solid var(--border);flex-shrink:0;}
+.hdr-row{display:flex;align-items:flex-end;justify-content:space-between;padding-bottom:12px;}
+.hdr-title{font-size:28px;font-weight:700;letter-spacing:-.5px;}
+.hdr-avatar{width:36px;height:36px;background:var(--p);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:700;color:#fff;cursor:pointer;flex-shrink:0;}
+.seg-ctrl{display:flex;background:var(--surface2);border-radius:10px;padding:2px;margin-bottom:12px;}
+.seg-btn{flex:1;padding:6px 2px;text-align:center;font-size:12px;font-weight:500;color:var(--t2);border:none;background:none;border-radius:8px;cursor:pointer;}
+.seg-btn.on{background:var(--surface);color:var(--t1);font-weight:600;box-shadow:0 1px 3px rgba(0,0,0,.1);}
+
+.scroll{flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch;}
+.scroll::-webkit-scrollbar{display:none;}
+
+.bnav{background:var(--surface);border-top:1px solid var(--border);display:flex;padding:8px 0;padding-bottom:calc(8px + var(--safe-bottom));flex-shrink:0;}
+.bnav-item{flex:1;display:flex;flex-direction:column;align-items:center;gap:2px;cursor:pointer;padding:4px 0;}
+.bnav-icon{color:var(--t3);}
+.bnav-item.on .bnav-icon{color:var(--p);}
+.bnav-lbl{font-size:10px;font-weight:500;color:var(--t2);}
+.bnav-item.on .bnav-lbl{color:var(--p);}
+
+.fab{position:absolute;bottom:calc(76px + var(--safe-bottom));right:20px;width:50px;height:50px;background:var(--p);border-radius:50%;display:flex;align-items:center;justify-content:center;box-shadow:var(--shadow-lg);cursor:pointer;z-index:40;}
+
+.view{display:none;} .view.on{display:block;}
+
+/* ── SUMMARY ── */
+.sum-row{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;padding:14px 16px 0;}
+.sum-c{background:var(--surface);border-radius:var(--r-sm);padding:10px 8px;text-align:center;box-shadow:var(--shadow);}
+.sum-v{font-size:20px;font-weight:700;line-height:1;}
+.sum-l{font-size:10px;color:var(--t2);margin-top:3px;line-height:1.2;}
+.c-d{color:var(--danger);}.c-w{color:var(--warn);}.c-p{color:var(--p);}.c-s{color:var(--success);}
+
+.sec{font-size:13px;font-weight:600;color:var(--t2);padding:16px 16px 8px;}
+
+/* ── COMPANY CARDS ── */
+.co-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;padding:0 16px 16px;}
+.co-card{background:var(--surface);border-radius:var(--r);padding:14px 14px 0;box-shadow:var(--shadow);cursor:pointer;display:flex;flex-direction:column;min-height:148px;border-bottom:3px solid var(--border);overflow:hidden;}
+.co-card.u-danger{border-bottom-color:var(--danger);}
+.co-card.u-warn{border-bottom-color:var(--warn);}
+.co-card.u-ok{border-bottom-color:var(--success);}
+.co-card.u-muted{border-bottom-color:var(--t3);}
+.co-top{display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;}
+.co-tag{font-size:10px;font-weight:600;padding:2px 8px;border-radius:20px;border:1px solid var(--border2);color:var(--t2);}
+.co-menu{color:var(--t3);display:flex;align-items:center;}
+.co-name{font-size:15px;font-weight:700;letter-spacing:-.2px;margin-bottom:2px;}
+.cn-rubii{color:var(--co-rubii);}.cn-dc{color:var(--co-dc);}.cn-conts{color:var(--co-conts);}
+.cn-hookka{color:var(--co-hookka);}.cn-gh{color:var(--co-gh);}.cn-carres{color:var(--co-carres);}
+.co-meta{font-size:11px;color:var(--t2);margin-bottom:8px;}
+.co-tasks{flex:1;}
+.co-task-row{font-size:12px;color:var(--t2);padding:4px 0;border-top:1px solid var(--border);display:flex;align-items:center;gap:6px;line-height:1.3;}
+.co-task-dot{width:5px;height:5px;border-radius:50%;flex-shrink:0;}
+.dot-d{background:var(--danger);}.dot-w{background:var(--warn);}.dot-ok{background:var(--t3);}
+.co-task-name{flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.co-footer{display:flex;align-items:center;justify-content:space-between;padding:8px 0 10px;margin-top:auto;}
+.co-overdue{font-size:11px;font-weight:600;color:var(--danger);}
+.co-overdue.none{color:var(--t3);font-weight:400;}
+.co-next{font-size:11px;color:var(--t2);}
+
+/* ── POPUP ── */
+.ov{display:none;position:fixed;inset:0;background:rgba(0,0,0,.4);z-index:100;align-items:flex-end;justify-content:center;}
+.ov.on{display:flex;}
+.sheet-base{background:var(--surface);border-radius:var(--r) var(--r) 0 0;width:100%;max-width:430px;max-height:88vh;overflow-y:auto;padding-bottom:calc(32px + var(--safe-bottom));}
+.handle{width:36px;height:4px;background:var(--border2);border-radius:4px;margin:10px auto 4px;}
+.popup-hdr{display:flex;align-items:center;justify-content:space-between;padding:12px 20px 4px;}
+.popup-title{font-size:18px;font-weight:700;}
+.popup-close{color:var(--t2);display:flex;align-items:center;cursor:pointer;}
+.popup-meta{font-size:13px;color:var(--t2);padding:0 20px 12px;}
+.popup-task{display:flex;align-items:center;gap:12px;padding:12px 20px;border-top:1px solid var(--border);cursor:pointer;}
+.popup-check{width:22px;height:22px;border-radius:50%;border:2px solid var(--border2);flex-shrink:0;display:flex;align-items:center;justify-content:center;}
+.popup-check.done-chk{background:var(--success);border-color:var(--success);}
+.popup-task-info{flex:1;min-width:0;}
+.popup-task-title{font-size:14px;font-weight:500;}
+.popup-task-sub{font-size:12px;color:var(--t2);margin-top:2px;}
+.popup-task-due{font-size:12px;flex-shrink:0;}
+.popup-task-due.over{color:var(--danger);font-weight:600;}
+.popup-task-due.soon{color:var(--warn);}
+.popup-actions{display:flex;gap:10px;padding:16px 20px 0;}
+.btn-fill{flex:1;padding:12px;border:none;background:var(--p);border-radius:var(--r-sm);font-size:15px;font-weight:600;color:#fff;cursor:pointer;text-align:center;}
+.btn-outline{flex:1;padding:12px;border:1.5px solid var(--p);border-radius:var(--r-sm);font-size:15px;font-weight:600;color:var(--p);background:none;cursor:pointer;text-align:center;}
+.btn-ghost{padding:12px 16px;border:1.5px solid var(--border);border-radius:var(--r-sm);font-size:15px;font-weight:600;color:var(--t2);background:none;cursor:pointer;}
+.btn-ghost-d{padding:12px 16px;border:1.5px solid var(--border);border-radius:var(--r-sm);font-size:15px;font-weight:600;color:var(--danger);background:none;cursor:pointer;}
+
+/* ── KANBAN ── */
+.k-scroll{display:flex;gap:12px;padding:12px 16px 16px;overflow-x:auto;scrollbar-width:none;}
+.k-scroll::-webkit-scrollbar{display:none;}
+.k-col{min-width:210px;flex-shrink:0;}
+.k-hdr{display:flex;align-items:center;gap:6px;margin-bottom:10px;}
+.k-hdr-dot{width:8px;height:8px;border-radius:50%;}
+.k-hdr-lbl{font-size:13px;font-weight:700;}
+.k-hdr-n{font-size:12px;font-weight:600;background:var(--surface2);color:var(--t2);padding:2px 7px;border-radius:20px;}
+.k-card{background:var(--surface);border-radius:var(--r-sm);padding:12px 12px 0;margin-bottom:8px;box-shadow:var(--shadow);cursor:pointer;overflow:hidden;}
+.k-co{font-size:11px;font-weight:600;margin-bottom:6px;}
+.k-title{font-size:13px;font-weight:600;line-height:1.4;margin-bottom:10px;}
+.k-foot{display:flex;align-items:center;justify-content:space-between;padding:8px 0 10px;}
+.k-urg{display:flex;align-items:center;gap:4px;font-size:11px;font-weight:600;}
+.k-urg.kd{color:var(--danger);}.k-urg.kw{color:var(--warn);}.k-urg.kg{color:var(--success);}.k-urg.km{color:var(--t2);}
+.k-info{display:flex;align-items:center;gap:8px;}
+.k-info-i{display:flex;align-items:center;gap:2px;font-size:11px;color:var(--t2);}
+.k-prog{height:4px;background:var(--border);margin:0 -12px;border-radius:0 0 var(--r-sm) var(--r-sm);}
+.k-prog-fill{height:100%;border-radius:0 0 var(--r-sm) var(--r-sm);}
+.kp-d .k-prog-fill{background:var(--danger);}
+.kp-w .k-prog-fill{background:var(--warn);}
+.kp-g .k-prog-fill{background:var(--success);}
+.kp-m .k-prog-fill{background:var(--t3);}
+.kco-rubii{color:var(--co-rubii)!important;}.kco-dc{color:var(--co-dc)!important;}
+.kco-conts{color:var(--co-conts)!important;}.kco-hookka{color:var(--co-hookka)!important;}
+.kco-gh{color:var(--co-gh)!important;}.kco-group{color:var(--t2)!important;}
+
+/* ── DEADLINE ── */
+.dl-toggle{display:flex;background:var(--surface2);border-radius:10px;padding:2px;margin:14px 16px 0;}
+.dl-tog-btn{flex:1;padding:6px;text-align:center;font-size:13px;font-weight:500;color:var(--t2);border:none;background:none;border-radius:8px;cursor:pointer;}
+.dl-tog-btn.on{background:var(--surface);color:var(--t1);font-weight:600;box-shadow:0 1px 3px rgba(0,0,0,.1);}
+.today-banner{background:var(--p);border-radius:var(--r);margin:12px 16px 0;padding:16px;color:#fff;}
+.today-date{font-size:12px;font-weight:600;opacity:.8;margin-bottom:4px;}
+.today-count{font-size:24px;font-weight:700;letter-spacing:-.5px;margin-bottom:2px;}
+.today-sub{font-size:13px;opacity:.85;}
+.today-tasks{padding:0 16px;margin-top:12px;}
+.today-task{background:var(--surface);border-radius:var(--r-sm);padding:12px 14px;margin-bottom:8px;display:flex;align-items:center;gap:12px;box-shadow:var(--shadow);cursor:pointer;}
+.today-check{width:22px;height:22px;border-radius:50%;border:2px solid var(--border2);flex-shrink:0;display:flex;align-items:center;justify-content:center;transition:background .15s;}
+.today-check.done-chk{background:var(--success);border-color:var(--success);}
+.today-task-info{flex:1;min-width:0;}
+.today-task-title{font-size:14px;font-weight:500;}
+.today-task-sub{font-size:12px;color:var(--t2);margin-top:1px;}
+.today-task-badge{font-size:11px;font-weight:600;padding:3px 8px;border-radius:20px;flex-shrink:0;}
+.b-r{background:#FFE5E5;color:#C00;}.b-a{background:#FFF4E5;color:#A05000;}
+.b-b{background:#E5EEFF;color:#003CC0;}.b-g{background:#E5F9EC;color:#006620;}
+@media(prefers-color-scheme:dark){
+  .b-r{background:#450A0A;color:#FCA5A5;}.b-a{background:#451A03;color:#FCD34D;}
+  .b-b{background:#1E3A5F;color:#93C5FD;}.b-g{background:#052E16;color:#86EFAC;}
+}
+.dl-list{padding:0 16px;}
+.dl-item{display:flex;gap:14px;align-items:center;background:var(--surface);border-radius:var(--r-sm);padding:12px 14px;margin-bottom:8px;box-shadow:var(--shadow);cursor:pointer;}
+.dl-date-blk{min-width:38px;text-align:center;flex-shrink:0;}
+.dl-date-n{font-size:20px;font-weight:700;line-height:1;display:block;}
+.dl-date-n.over{color:var(--danger);}
+.dl-date-mo{font-size:10px;color:var(--t2);font-weight:600;text-transform:uppercase;}
+.dl-info{flex:1;min-width:0;}
+.dl-task-name{font-size:14px;font-weight:500;}
+.dl-task-sub{font-size:12px;color:var(--t2);margin-top:2px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.dl-badge{font-size:11px;font-weight:600;padding:3px 9px;border-radius:20px;flex-shrink:0;}
+
+/* ── WEEKLY ── */
+.dash-row{display:grid;grid-template-columns:1fr 1fr;gap:10px;padding:12px 16px 0;}
+.dash-card{background:var(--surface);border-radius:var(--r);padding:16px;box-shadow:var(--shadow);}
+.dash-card.full{grid-column:1/-1;}
+.dash-v{font-size:28px;font-weight:700;letter-spacing:-.5px;line-height:1;}
+.dash-l{font-size:12px;color:var(--t2);margin-top:4px;}
+.dash-trend{font-size:12px;font-weight:600;margin-top:6px;}
+.t-up{color:var(--success);}.t-dn{color:var(--danger);}
+.bar-chart{display:flex;align-items:flex-end;gap:5px;height:48px;margin-top:10px;}
+.bar{flex:1;border-radius:4px 4px 0 0;background:var(--p);opacity:.5;}
+.bar.active{opacity:1;}
+.co-row-w{display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid var(--border);}
+.co-row-w:last-child{border-bottom:none;}
+.co-row-name{font-size:13px;font-weight:500;flex:1;}
+.co-row-bar-wrap{width:80px;height:6px;background:var(--surface2);border-radius:4px;overflow:hidden;}
+.co-row-bar{height:100%;border-radius:4px;}
+.co-row-pct{font-size:12px;font-weight:600;color:var(--t2);min-width:28px;text-align:right;}
+.vel-row{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;}
+.vel-label{font-size:13px;color:var(--t2);flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;padding-right:8px;}
+.vel-val{font-size:13px;font-weight:600;flex-shrink:0;}
+
+/* ── ADD/EDIT TASK FORM ── */
+.form-sheet{background:var(--surface);border-radius:var(--r) var(--r) 0 0;width:100%;max-width:430px;max-height:92vh;overflow-y:auto;padding:0 20px calc(40px + var(--safe-bottom));}
+.sheet-hdr{font-size:20px;font-weight:700;margin-bottom:20px;letter-spacing:-.3px;}
+.f-g{margin-bottom:14px;}
+.f-lbl{font-size:13px;font-weight:600;color:var(--t2);margin-bottom:6px;display:block;}
+.f-inp{width:100%;background:var(--surface2);border:1.5px solid var(--border);border-radius:var(--r-sm);padding:11px 13px;font-size:15px;color:var(--t1);outline:none;font-family:inherit;}
+.f-inp:focus{border-color:var(--p);}
+textarea.f-inp{resize:none;min-height:72px;}
+.f-sel{width:100%;background:var(--surface2);border:1.5px solid var(--border);border-radius:var(--r-sm);padding:11px 13px;font-size:15px;color:var(--t1);outline:none;appearance:none;font-family:inherit;}
+.f-sel:focus{border-color:var(--p);}
+.f-2col{display:grid;grid-template-columns:1fr 1fr;gap:12px;}
+.prio-row{display:flex;gap:8px;}
+.prio-pill{flex:1;padding:10px 4px;text-align:center;border-radius:var(--r-sm);border:2px solid var(--border);font-size:13px;font-weight:600;cursor:pointer;background:var(--surface2);color:var(--t2);}
+.prio-pill.sp-d{border-color:var(--danger);background:#FFE5E5;color:var(--danger);}
+.prio-pill.sp-w{border-color:var(--warn);background:#FFF4E5;color:var(--warn);}
+.prio-pill.sp-g{border-color:var(--success);background:#E5F9EC;color:var(--success);}
+@media(prefers-color-scheme:dark){
+  .prio-pill.sp-d{background:#450A0A;}.prio-pill.sp-w{background:#451A03;}.prio-pill.sp-g{background:#052E16;}
+}
+.sheet-btns{display:flex;gap:10px;margin-top:20px;}
+
+/* ── TASK DETAIL ── */
+.det-sheet{background:var(--surface);border-radius:var(--r) var(--r) 0 0;width:100%;max-width:430px;padding:0 20px calc(40px + var(--safe-bottom));}
+.det-tag-row{display:flex;gap:8px;margin-bottom:12px;flex-wrap:wrap;}
+.det-tag{font-size:11px;padding:3px 9px;border-radius:20px;background:var(--surface2);color:var(--t2);}
+.det-title{font-size:20px;font-weight:700;letter-spacing:-.3px;margin-bottom:6px;}
+.det-sub{font-size:13px;color:var(--t2);margin-bottom:16px;}
+.det-notes{font-size:14px;color:var(--t2);background:var(--surface2);border-radius:var(--r-sm);padding:12px;margin-bottom:16px;line-height:1.6;}
+.det-meta-row{display:flex;gap:20px;margin-bottom:20px;flex-wrap:wrap;}
+.det-meta-l{font-size:11px;font-weight:700;color:var(--t3);text-transform:uppercase;letter-spacing:.05em;margin-bottom:2px;}
+.det-meta-v{font-size:14px;font-weight:600;}
+.det-btns{display:flex;gap:8px;}
+.status-pill{font-size:12px;font-weight:600;padding:4px 10px;border-radius:20px;}
+.sp-over{background:#FFE5E5;color:var(--danger);}.sp-prog{background:#E5EEFF;color:var(--p);}
+.sp-done{background:#E5F9EC;color:var(--success);}.sp-todo{background:var(--surface2);color:var(--t2);}
+@media(prefers-color-scheme:dark){
+  .sp-over{background:#450A0A;color:#FF453A;}.sp-prog{background:#1C3461;color:#0A84FF;}
+  .sp-done{background:#052E16;color:#30D158;}
+}
+
+/* ── TOAST ── */
+.toast{position:fixed;bottom:calc(90px + var(--safe-bottom));left:50%;transform:translateX(-50%) translateY(20px);background:var(--t1);color:var(--bg);padding:10px 20px;border-radius:20px;font-size:14px;font-weight:500;opacity:0;transition:opacity .2s,transform .2s;pointer-events:none;z-index:999;white-space:nowrap;}
+.toast.show{opacity:1;transform:translateX(-50%) translateY(0);}
+
+/* ── SETTINGS ── */
+.set-sheet{background:var(--surface);border-radius:var(--r) var(--r) 0 0;width:100%;max-width:430px;max-height:85vh;overflow-y:auto;padding:0 20px calc(40px + var(--safe-bottom));}
+.set-hdr{font-size:20px;font-weight:700;margin-bottom:20px;letter-spacing:-.3px;display:flex;align-items:center;justify-content:space-between;}
+.set-section{font-size:13px;font-weight:700;color:var(--t2);text-transform:uppercase;letter-spacing:.04em;margin:20px 0 10px;}
+.set-row{display:flex;align-items:center;gap:12px;padding:12px 0;border-bottom:1px solid var(--border);}
+.set-row:last-child{border-bottom:none;}
+.set-icon{width:32px;height:32px;border-radius:8px;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+.set-icon .mi{color:#fff;font-size:18px;}
+.set-info{flex:1;min-width:0;}
+.set-info-label{font-size:14px;font-weight:500;}
+.set-info-sub{font-size:12px;color:var(--t2);margin-top:1px;}
+.set-url-row{display:flex;gap:8px;margin-top:8px;}
+.set-url-inp{flex:1;background:var(--surface2);border:1.5px solid var(--border);border-radius:var(--r-sm);padding:10px 12px;font-size:14px;color:var(--t1);outline:none;font-family:inherit;}
+.set-url-inp:focus{border-color:var(--p);}
+.set-url-inp::placeholder{color:var(--t3);}
+.sync-status{display:flex;align-items:center;gap:6px;margin-top:8px;font-size:12px;color:var(--t2);}
+.sync-status .mi{font-size:14px;}
+.sync-ok{color:var(--success);}.sync-err{color:var(--danger);}
+.sync-btn{width:100%;padding:12px;border:none;background:var(--p);border-radius:var(--r-sm);font-size:15px;font-weight:600;color:#fff;cursor:pointer;text-align:center;margin-top:12px;display:flex;align-items:center;justify-content:center;gap:8px;}
+.sync-btn:disabled{opacity:.4;cursor:not-allowed;}
+.sync-btn .spinner{width:16px;height:16px;border:2px solid rgba(255,255,255,.3);border-top-color:#fff;}
+.set-footer{text-align:center;padding:24px 0 0;font-size:12px;color:var(--t3);}
+
+/* ── KANBAN FILTER ── */
+.k-filter-bar{display:flex;align-items:center;gap:12px;padding:12px 16px 0;}
+.k-filter-sel{background:var(--surface);border:1.5px solid var(--border);border-radius:var(--r-sm);padding:7px 12px;font-size:13px;font-weight:500;color:var(--t1);outline:none;appearance:none;font-family:inherit;cursor:pointer;min-width:140px;}
+.k-filter-sel:focus{border-color:var(--p);}
+.k-filter-hint{font-size:11px;color:var(--t3);flex:1;}
+
+/* ── INLINE CHECKBOX ── */
+.task-chk{width:22px;height:22px;border-radius:50%;border:2px solid var(--border2);flex-shrink:0;display:flex;align-items:center;justify-content:center;cursor:pointer;transition:background .15s,border-color .15s;}
+.task-chk.done-chk{background:var(--success);border-color:var(--success);}
+.task-chk:active{transform:scale(.9);}
+
+/* ── SUBTASK LIST (inside detail sheet) ── */
+.sub-section{margin-bottom:16px;}
+.sub-hdr{font-size:13px;font-weight:700;color:var(--t2);display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;}
+.sub-progress{font-size:11px;color:var(--t3);}
+.sub-prog-bar{height:3px;background:var(--border);border-radius:4px;margin-bottom:10px;overflow:hidden;}
+.sub-prog-fill{height:100%;background:var(--success);border-radius:4px;transition:width .3s;}
+.sub-item{display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid var(--border);}
+.sub-item:last-child{border-bottom:none;}
+.sub-chk{width:20px;height:20px;border-radius:50%;border:2px solid var(--border2);flex-shrink:0;display:flex;align-items:center;justify-content:center;cursor:pointer;transition:background .15s;}
+.sub-chk.done-chk{background:var(--success);border-color:var(--success);}
+.sub-text{flex:1;font-size:14px;}
+.sub-text.done-txt{text-decoration:line-through;color:var(--t3);}
+.sub-del{color:var(--t3);cursor:pointer;display:flex;align-items:center;padding:2px;}
+.sub-add-row{display:flex;gap:8px;margin-top:10px;}
+.sub-add-inp{flex:1;background:var(--surface2);border:1.5px solid var(--border);border-radius:var(--r-sm);padding:9px 12px;font-size:14px;color:var(--t1);outline:none;font-family:inherit;}
+.sub-add-inp:focus{border-color:var(--p);}
+.sub-add-btn{padding:9px 14px;background:var(--p);color:#fff;border:none;border-radius:var(--r-sm);font-size:14px;font-weight:600;cursor:pointer;}
+.loading{display:flex;align-items:center;justify-content:center;height:120px;color:var(--t2);font-size:14px;gap:8px;}
+.spinner{width:18px;height:18px;border:2px solid var(--border);border-top-color:var(--p);border-radius:50%;animation:spin .7s linear infinite;}
+@keyframes spin{to{transform:rotate(360deg);}}
+
+/* ── EMPTY STATE ── */
+.empty{display:flex;flex-direction:column;align-items:center;justify-content:center;padding:48px 32px;text-align:center;color:var(--t2);}
+.empty-icon{font-size:48px;margin-bottom:16px;opacity:.4;}
+.empty-title{font-size:16px;font-weight:600;color:var(--t1);margin-bottom:6px;}
+.empty-sub{font-size:14px;line-height:1.5;}
+
+/* ── TASKS TAB ── */
+.tl-search{display:flex;align-items:center;gap:8px;margin:12px 16px 0;background:var(--surface);border:1.5px solid var(--border);border-radius:var(--r-sm);padding:9px 13px;}
+.tl-search input{flex:1;background:none;border:none;outline:none;font-size:15px;color:var(--t1);font-family:inherit;}
+.tl-search input::placeholder{color:var(--t3);}
+.tl-search .mi{color:var(--t3);font-size:20px;}
+
+/* Company dropdown */
+.tl-co-sel{width:100%;background:var(--surface);border:1.5px solid var(--border);border-radius:var(--r-sm);padding:10px 13px;font-size:14px;font-weight:500;color:var(--t1);outline:none;appearance:none;font-family:inherit;cursor:pointer;}
+.tl-co-sel:focus{border-color:var(--p);}
+
+/* Bullet toggle row */
+.tl-bullet-row{display:flex;gap:6px;padding:10px 16px 0;overflow-x:auto;scrollbar-width:none;}
+.tl-bullet-row::-webkit-scrollbar{display:none;}
+.tl-bullet{display:flex;align-items:center;gap:6px;padding:7px 14px;border-radius:20px;font-size:13px;font-weight:500;color:var(--t2);background:var(--surface);border:1.5px solid var(--border);cursor:pointer;white-space:nowrap;flex-shrink:0;}
+.tl-bullet.on{background:var(--t1);color:var(--bg);border-color:var(--t1);}
+.tl-bullet-dot{width:7px;height:7px;border-radius:50%;flex-shrink:0;}
+.tl-bullet.on .tl-bullet-dot{background:#fff!important;}
+
+/* Department segment row */
+.tl-dept-row{display:flex;gap:6px;padding:8px 16px 0;overflow-x:auto;scrollbar-width:none;}
+.tl-dept-row::-webkit-scrollbar{display:none;}
+.tl-dept-chip{padding:5px 12px;border-radius:20px;font-size:12px;font-weight:500;color:var(--t2);background:var(--surface2);border:1.5px solid transparent;cursor:pointer;white-space:nowrap;flex-shrink:0;}
+.tl-dept-chip.on{background:var(--p-light);color:var(--p);border-color:var(--p);}
+
+.tl-meta{display:flex;align-items:center;justify-content:space-between;padding:10px 16px 6px;}
+.tl-count{font-size:12px;color:var(--t2);}
+.tl-bulk-btn{font-size:12px;font-weight:600;color:var(--p);cursor:pointer;}
+.tl-bulk-bar{display:none;align-items:center;justify-content:space-between;padding:10px 16px;background:var(--surface);border-bottom:1px solid var(--border);}
+.tl-bulk-bar.on{display:flex;}
+.tl-bulk-count{font-size:13px;font-weight:600;}
+.tl-bulk-actions{display:flex;gap:12px;}
+.tl-bulk-action{font-size:13px;font-weight:600;cursor:pointer;}
+.tl-bulk-del{color:var(--danger);}.tl-bulk-done{color:var(--success);}.tl-bulk-cancel{color:var(--t2);}
+
+/* Task row */
+.tl-list{padding:0 16px;}
+.tl-row{display:flex;align-items:center;gap:10px;background:var(--surface);border-radius:var(--r-sm);padding:12px 14px;margin-bottom:8px;box-shadow:var(--shadow);position:relative;overflow:hidden;}
+.tl-sel-chk{width:22px;height:22px;border-radius:50%;border:2px solid var(--border2);flex-shrink:0;display:flex;align-items:center;justify-content:center;transition:background .15s;}
+.tl-sel-chk.on{background:var(--p);border-color:var(--p);}
+.tl-row-check{width:22px;height:22px;border-radius:50%;border:2px solid var(--border2);flex-shrink:0;display:flex;align-items:center;justify-content:center;cursor:pointer;transition:background .15s,border-color .15s;}
+.tl-row-check.done-chk{background:var(--success);border-color:var(--success);}
+.tl-row-body{flex:1;min-width:0;cursor:pointer;}
+.tl-row-title{font-size:14px;font-weight:500;color:var(--t1);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.tl-row-title.done-txt{text-decoration:line-through;color:var(--t3);}
+.tl-row-meta{display:flex;align-items:center;gap:6px;margin-top:3px;}
+.tl-row-co{font-size:11px;font-weight:600;}
+.tl-row-dept{font-size:11px;color:var(--t2);}
+.tl-row-due{font-size:11px;font-weight:500;margin-left:auto;flex-shrink:0;}
+.tl-row-due.over{color:var(--danger);}.tl-row-due.soon{color:var(--warn);}
+.tl-del-bg{position:absolute;right:0;top:0;bottom:0;width:80px;background:var(--danger);display:flex;align-items:center;justify-content:center;border-radius:0 var(--r-sm) var(--r-sm) 0;}
+.tl-prio-bar{width:3px;border-radius:4px;height:32px;flex-shrink:0;}
+.pb-d{background:var(--danger);}.pb-w{background:var(--warn);}.pb-g{background:var(--success);}
+
+/* Dept section title */
+.tl-section-hdr{font-size:11px;font-weight:700;color:var(--t2);text-transform:uppercase;letter-spacing:.06em;padding:16px 16px 6px;}
+</style>
+</head>
+<body>
+<div class="app">
+
+<!-- HEADER -->
+<div class="hdr">
+  <div class="hdr-row">
+    <div class="hdr-title" id="hdr-title">Overview</div>
+    <div class="hdr-avatar" onclick="openSettings()">R</div>
+  </div>
+  <div class="seg-ctrl">
+    <button class="seg-btn on" onclick="nav('home')">Companies</button>
+    <button class="seg-btn" onclick="nav('kanban')">Kanban</button>
+    <button class="seg-btn" onclick="nav('tasks')">Tasks</button>
+    <button class="seg-btn" onclick="nav('deadline')">Deadline</button>
+    <button class="seg-btn" onclick="nav('weekly')">Weekly</button>
+  </div>
+</div>
+
+<!-- SCROLL -->
+<div class="scroll" id="scroll">
+
+  <!-- HOME -->
+  <div id="v-home" class="view on">
+    <div class="sum-row" id="sum-row">
+      <div class="sum-c"><div class="sum-v c-d" id="s-overdue">—</div><div class="sum-l">Overdue</div></div>
+      <div class="sum-c"><div class="sum-v c-w" id="s-week">—</div><div class="sum-l">This Week</div></div>
+      <div class="sum-c"><div class="sum-v c-p" id="s-prog">—</div><div class="sum-l">In Progress</div></div>
+      <div class="sum-c"><div class="sum-v c-s" id="s-done">—</div><div class="sum-l">Done</div></div>
+    </div>
+    <div class="sec">Companies · triage → urgency</div>
+    <div class="co-grid" id="co-grid"></div>
+  </div>
+
+  <!-- KANBAN -->
+  <div id="v-kanban" class="view">
+    <div class="k-filter-bar">
+      <select class="k-filter-sel" id="k-co-filter" onchange="renderKanban()">
+        <option value="">All Companies</option>
+        <option value="rubii">Rubii</option>
+        <option value="dc">Dream Crafter</option>
+        <option value="conts">The Conts</option>
+        <option value="hookka">Hookka</option>
+        <option value="gh">Golden Home</option>
+        <option value="carres">Carres</option>
+      </select>
+      <div class="k-filter-hint">← Swipe · bar = subtask progress</div>
+    </div>
+    <div class="k-scroll" id="k-scroll"></div>
+  </div>
+
+  <!-- TASKS -->
+  <div id="v-tasks" class="view">
+    <!-- Bulk action bar -->
+    <div class="tl-bulk-bar" id="tl-bulk-bar">
+      <div class="tl-bulk-count" id="tl-bulk-count">0 selected</div>
+      <div class="tl-bulk-actions">
+        <div class="tl-bulk-action tl-bulk-done" onclick="bulkDone()">Mark Done</div>
+        <div class="tl-bulk-action tl-bulk-del" onclick="bulkDelete()">Delete</div>
+        <div class="tl-bulk-action tl-bulk-cancel" onclick="exitBulk()">Cancel</div>
+      </div>
+    </div>
+
+    <!-- 1. Search bar -->
+    <div class="tl-search">
+      <span class="mi">search</span>
+      <input type="text" id="tl-search-inp" placeholder="Search tasks…" oninput="renderTasksList()"/>
+      <span class="mi" id="tl-search-clear" style="display:none;cursor:pointer;" onclick="clearSearch()">close</span>
+    </div>
+
+    <!-- 2. Company dropdown -->
+    <div style="padding:10px 16px 0;">
+      <select class="tl-co-sel" id="tl-co-sel" onchange="onCoChange()">
+        <option value="">All Companies</option>
+        <option value="rubii">Rubii</option>
+        <option value="dc">Dream Crafter</option>
+        <option value="conts">The Conts</option>
+        <option value="hookka">Hookka</option>
+        <option value="gh">Golden Home</option>
+        <option value="carres">Carres</option>
+      </select>
+    </div>
+
+    <!-- 3. Status bullet toggle: All | Overdue | Urgent | In Progress -->
+    <div class="tl-bullet-row" id="tl-bullet-row">
+      <div class="tl-bullet on" data-val="" onclick="setBullet(this,'')">
+        <div class="tl-bullet-dot" style="background:var(--t3)"></div>All
+      </div>
+      <div class="tl-bullet" data-val="overdue" onclick="setBullet(this,'overdue')">
+        <div class="tl-bullet-dot" style="background:var(--danger)"></div>Overdue
+      </div>
+      <div class="tl-bullet" data-val="urgent" onclick="setBullet(this,'urgent')">
+        <div class="tl-bullet-dot" style="background:var(--warn)"></div>Urgent
+      </div>
+      <div class="tl-bullet" data-val="inprogress" onclick="setBullet(this,'inprogress')">
+        <div class="tl-bullet-dot" style="background:var(--p)"></div>In Progress
+      </div>
+    </div>
+
+    <!-- 4. Department segment (scrollable, updates on company change) -->
+    <div class="tl-dept-row" id="tl-dept-row">
+      <div class="tl-dept-chip on" data-val="" onclick="setDept(this,'')">All Depts</div>
+    </div>
+
+    <!-- Meta row -->
+    <div class="tl-meta">
+      <div class="tl-count" id="tl-task-count"></div>
+      <div class="tl-bulk-btn" onclick="enterBulk()">Select</div>
+    </div>
+
+    <!-- List -->
+    <div class="tl-list" id="tl-list"></div>
+  </div>
+
+  <!-- DEADLINE -->
+  <div id="v-deadline" class="view">
+    <div class="dl-toggle">
+      <button class="dl-tog-btn on" id="dl-today-btn" onclick="dlToggle('today')">Today</button>
+      <button class="dl-tog-btn" id="dl-upcoming-btn" onclick="dlToggle('upcoming')">Upcoming</button>
+    </div>
+    <div id="dl-today-view"></div>
+    <div id="dl-upcoming-view" style="display:none;"></div>
+  </div>
+
+  <!-- WEEKLY -->
+  <div id="v-weekly" class="view">
+    <div id="weekly-content"></div>
+  </div>
+
+</div><!-- /scroll -->
+
+<!-- FAB -->
+<div class="fab" onclick="openForm()"><span class="mi mi-lg" style="color:#fff">add</span></div>
+
+<!-- BOTTOM NAV -->
+<div class="bnav">
+  <div class="bnav-item on" id="bn-home" onclick="nav('home')"><span class="mi bnav-icon">domain</span><div class="bnav-lbl">Companies</div></div>
+  <div class="bnav-item" id="bn-kanban" onclick="nav('kanban')"><span class="mi bnav-icon">view_kanban</span><div class="bnav-lbl">Kanban</div></div>
+  <div class="bnav-item" id="bn-deadline" onclick="nav('deadline')"><span class="mi bnav-icon">event</span><div class="bnav-lbl">Deadline</div></div>
+  <div class="bnav-item" id="bn-weekly" onclick="nav('weekly')"><span class="mi bnav-icon">bar_chart</span><div class="bnav-lbl">Weekly</div></div>
+</div>
+
+</div><!-- /app -->
+
+<!-- COMPANY POPUP -->
+<div class="ov" id="co-popup-ov" onclick="if(event.target===this)closePopup()">
+  <div class="sheet-base">
+    <div class="handle"></div>
+    <div class="popup-hdr">
+      <div class="popup-title" id="popup-name"></div>
+      <div class="popup-close" onclick="closePopup()"><span class="mi">close</span></div>
+    </div>
+    <div class="popup-meta" id="popup-meta"></div>
+    <div id="popup-tasks"></div>
+    <div class="popup-actions">
+      <div class="btn-outline" onclick="closePopup()">Close</div>
+      <div class="btn-fill" id="popup-view-btn">View All →</div>
+    </div>
+  </div>
+</div>
+
+<!-- ADD/EDIT TASK -->
+<div class="ov" id="form-ov" onclick="if(event.target===this)closeForm()">
+  <div class="form-sheet">
+    <div class="handle"></div>
+    <div class="sheet-hdr" id="form-title">New Task</div>
+    <div class="f-g"><label class="f-lbl">Title *</label><input class="f-inp" id="f-title" type="text" placeholder="What needs to be done?"/></div>
+    <div class="f-g"><label class="f-lbl">Notes</label><textarea class="f-inp" id="f-notes" placeholder="Additional context…"></textarea></div>
+    <div class="f-2col">
+      <div class="f-g"><label class="f-lbl">Company *</label>
+        <select class="f-sel" id="f-co" onchange="updateDepts()">
+          <option value="">Select…</option>
+          <option value="rubii">Rubii</option>
+          <option value="dc">Dream Crafter</option>
+          <option value="conts">The Conts</option>
+          <option value="hookka">Hookka</option>
+          <option value="gh">Golden Home</option>
+          <option value="carres">Carres</option>
+        </select>
+      </div>
+      <div class="f-g"><label class="f-lbl">Department *</label><select class="f-sel" id="f-dept"><option value="">Select company first</option></select></div>
+    </div>
+    <div class="f-g"><label class="f-lbl">Project</label><input class="f-inp" id="f-proj" type="text" placeholder="e.g. Wipro Campaign"/></div>
+    <div class="f-2col">
+      <div class="f-g"><label class="f-lbl">Deadline</label><input class="f-inp" id="f-deadline" type="date"/></div>
+      <div class="f-g"><label class="f-lbl">Status</label>
+        <select class="f-sel" id="f-status">
+          <option value="todo">To Do</option>
+          <option value="inprogress">In Progress</option>
+          <option value="done">Done</option>
+        </select>
+      </div>
+    </div>
+    <div class="f-g"><label class="f-lbl">Priority</label>
+      <div class="prio-row">
+        <div class="prio-pill sp-d" id="pp-d" onclick="setPrio('d')">High</div>
+        <div class="prio-pill" id="pp-w" onclick="setPrio('w')">Med</div>
+        <div class="prio-pill" id="pp-g" onclick="setPrio('g')">Low</div>
+      </div>
+    </div>
+    <div class="f-g"><label class="f-lbl">Tags <span style="font-weight:400;color:var(--t3)">(comma separated)</span></label><input class="f-inp" id="f-tags" type="text" placeholder="e.g. Wipro, Client, Draft"/></div>
+    <div class="sheet-btns">
+      <div class="btn-ghost" onclick="closeForm()">Cancel</div>
+      <div class="btn-fill" onclick="saveTask()">Save Task</div>
+    </div>
+  </div>
+</div>
+
+<!-- TASK DETAIL -->
+<div class="ov" id="det-ov" onclick="if(event.target===this)closeDet()">
+  <div class="det-sheet">
+    <div class="handle"></div>
+    <div style="padding:0 0 4px;">
+      <div class="det-tag-row" id="det-tags"></div>
+      <div style="display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:8px;">
+        <div class="det-title" id="det-title" style="flex:1;padding-right:12px;"></div>
+        <span class="status-pill" id="det-status"></span>
+      </div>
+      <div class="det-sub" id="det-sub"></div>
+      <div class="det-notes" id="det-notes"></div>
+      <div class="det-meta-row">
+        <div><div class="det-meta-l">Deadline</div><div class="det-meta-v" id="det-dl"></div></div>
+        <div><div class="det-meta-l">Priority</div><div class="det-meta-v" id="det-prio"></div></div>
+        <div><div class="det-meta-l">Project</div><div class="det-meta-v" id="det-proj"></div></div>
+      </div>
+      <!-- SUBTASKS -->
+      <div class="sub-section" id="det-subtasks"></div>
+      <div class="det-btns">
+        <div class="btn-ghost-d" onclick="deleteTask()">Delete</div>
+        <div class="btn-ghost" onclick="closeDet()">Close</div>
+        <div class="btn-fill" onclick="editTask()">Edit</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- SETTINGS -->
+<div class="ov" id="set-ov" onclick="if(event.target===this)closeSettings()">
+  <div class="set-sheet">
+    <div class="handle"></div>
+    <div class="set-hdr">
+      <span>Settings</span>
+      <span class="mi" style="cursor:pointer;color:var(--t2)" onclick="closeSettings()">close</span>
+    </div>
+
+    <div class="set-section">Google Sheets Sync</div>
+    <div class="set-row" style="flex-direction:column;align-items:stretch;">
+      <div style="display:flex;align-items:center;gap:12px;">
+        <div class="set-icon" style="background:#34A853"><span class="mi">table_chart</span></div>
+        <div class="set-info">
+          <div class="set-info-label">Apps Script URL</div>
+          <div class="set-info-sub">Paste your deployed GAS web app URL</div>
+        </div>
+      </div>
+      <div class="set-url-row">
+        <input class="set-url-inp" id="set-gas-url" type="url" placeholder="https://script.google.com/macros/s/…/exec"/>
+      </div>
+      <div style="display:flex;gap:8px;margin-top:8px;">
+        <div class="btn-ghost" style="flex:1;padding:10px;font-size:13px;" onclick="saveGasUrl()">Save URL</div>
+        <div class="btn-ghost-d" style="flex:0;padding:10px 14px;font-size:13px;" onclick="clearGasUrl()">Clear</div>
+      </div>
+      <div class="sync-status" id="sync-status" style="display:none;">
+        <span class="mi">check_circle</span>
+        <span id="sync-status-text"></span>
+      </div>
+    </div>
+
+    <button class="sync-btn" id="sync-btn" onclick="syncToSheets()" disabled>
+      <span class="mi" style="font-size:18px;">sync</span>
+      <span id="sync-btn-text">Sync to Google Sheets</span>
+    </button>
+
+    <div class="set-section">Data</div>
+    <div class="set-row">
+      <div class="set-icon" style="background:var(--p)"><span class="mi">storage</span></div>
+      <div class="set-info">
+        <div class="set-info-label" id="set-task-count">0 tasks</div>
+        <div class="set-info-sub">Stored in IndexedDB (local)</div>
+      </div>
+    </div>
+
+    <div class="set-footer">Task Tracker PWA v1.1<br/>Single-user · Offline-first</div>
+  </div>
+</div>
+
+<!-- TOAST -->
+<div class="toast" id="toast"></div>
+
+<script>
+// ══════════════════════════════════════════════════════
+// CONSTANTS
+// ══════════════════════════════════════════════════════
+const DB_NAME='TaskTrackerDB', DB_VER=2, STORE='tasks', CFG_STORE='config';
+
+const COMPANIES={
+  rubii:{name:'Rubii',label:'Marketing',triage:'Accelerate',urgency:'u-danger',clr:'var(--co-rubii)',nameClass:'cn-rubii',order:0},
+  dc:{name:'Dream Crafter',label:'Interior Design',triage:'Accelerate',urgency:'u-ok',clr:'var(--co-dc)',nameClass:'cn-dc',order:1},
+  conts:{name:'The Conts',label:'Property Mgmt',triage:'Maintain ⚠',urgency:'u-warn',clr:'var(--co-conts)',nameClass:'cn-conts',order:2},
+  hookka:{name:'Hookka',label:'Furniture',triage:'Maintain',urgency:'u-ok',clr:'var(--co-hookka)',nameClass:'cn-hookka',order:3},
+  gh:{name:'Golden Home',label:'Distribution',triage:'Sprint',urgency:'u-muted',clr:'var(--co-gh)',nameClass:'cn-gh',order:4},
+  carres:{name:'Carres',label:'Product/Brand',triage:'Pause',urgency:'u-muted',clr:'var(--co-carres)',nameClass:'cn-carres',order:5}
+};
+
+const DEPTS={
+  rubii:['Account Management','Creative','Influencer Relations','Operations','Finance'],
+  dc:['Design','Production','Sales','Operations','Finance'],
+  conts:['Leasing','Maintenance','Admin','CS','Finance','Operations'],
+  hookka:['Production','Logistics','Sales','Operations','Finance'],
+  gh:['Sales','Operations','Finance'],
+  carres:['Sales','Marketing','CS','Logistics','Finance']
+};
+
+const STATUS_LABELS={todo:'To Do',inprogress:'In Progress',done:'Done',overdue:'Overdue'};
+const PRIO_LABELS={d:'High',w:'Med',g:'Low'};
+
+// ══════════════════════════════════════════════════════
+// STATE
+// ══════════════════════════════════════════════════════
+let db=null, tasks=[], currentView='home', editingId=null, currentPrio='d', detailId=null, popupCo=null, kanbanFilter='';
+let config={gasUrl:'',lastSync:null};
+
+// ══════════════════════════════════════════════════════
+// INDEXEDDB
+// ══════════════════════════════════════════════════════
+function openDB(){
+  return new Promise((res,rej)=>{
+    const req=indexedDB.open(DB_NAME,DB_VER);
+    req.onupgradeneeded=e=>{
+      const d=e.target.result;
+      if(!d.objectStoreNames.contains(STORE)){
+        const s=d.createObjectStore(STORE,{keyPath:'id'});
+        s.createIndex('company','company');
+        s.createIndex('status','status');
+        s.createIndex('deadline','deadline');
+      }
+      if(!d.objectStoreNames.contains(CFG_STORE)){
+        d.createObjectStore(CFG_STORE,{keyPath:'key'});
+      }
+    };
+    req.onsuccess=e=>{res(e.target.result);};
+    req.onerror=e=>{rej(e.target.error);};
+  });
+}
+
+function getAllTasks(){
+  return new Promise((res,rej)=>{
+    const tx=db.transaction(STORE,'readonly');
+    const req=tx.objectStore(STORE).getAll();
+    req.onsuccess=e=>res(e.target.result);
+    req.onerror=e=>rej(e.target.error);
+  });
+}
+
+function putTask(task){
+  return new Promise((res,rej)=>{
+    const tx=db.transaction(STORE,'readwrite');
+    const req=tx.objectStore(STORE).put(task);
+    req.onsuccess=()=>res();
+    req.onerror=e=>rej(e.target.error);
+  });
+}
+
+function removeTask(id){
+  return new Promise((res,rej)=>{
+    const tx=db.transaction(STORE,'readwrite');
+    const req=tx.objectStore(STORE).delete(id);
+    req.onsuccess=()=>res();
+    req.onerror=e=>rej(e.target.error);
+  });
+}
+
+// ══════════════════════════════════════════════════════
+// CONFIG (IndexedDB config store)
+// ══════════════════════════════════════════════════════
+function getConfig(key){
+  return new Promise((res,rej)=>{
+    const tx=db.transaction(CFG_STORE,'readonly');
+    const req=tx.objectStore(CFG_STORE).get(key);
+    req.onsuccess=e=>res(e.target.result?.value??null);
+    req.onerror=e=>rej(e.target.error);
+  });
+}
+function setConfig(key,value){
+  return new Promise((res,rej)=>{
+    const tx=db.transaction(CFG_STORE,'readwrite');
+    const req=tx.objectStore(CFG_STORE).put({key,value});
+    req.onsuccess=()=>res();
+    req.onerror=e=>rej(e.target.error);
+  });
+}
+function delConfig(key){
+  return new Promise((res,rej)=>{
+    const tx=db.transaction(CFG_STORE,'readwrite');
+    const req=tx.objectStore(CFG_STORE).delete(key);
+    req.onsuccess=()=>res();
+    req.onerror=e=>rej(e.target.error);
+  });
+}
+
+async function loadConfig(){
+  config.gasUrl=await getConfig('gasUrl')||'';
+  config.lastSync=await getConfig('lastSync')||null;
+}
+
+// ══════════════════════════════════════════════════════
+// SETTINGS PANEL
+// ══════════════════════════════════════════════════════
+function openSettings(){
+  document.getElementById('set-gas-url').value=config.gasUrl;
+  document.getElementById('set-task-count').textContent=`${tasks.length} tasks`;
+  document.getElementById('sync-btn').disabled=!config.gasUrl;
+  updateSyncStatus();
+  document.getElementById('set-ov').classList.add('on');
+}
+function closeSettings(){document.getElementById('set-ov').classList.remove('on');}
+
+async function saveGasUrl(){
+  const url=document.getElementById('set-gas-url').value.trim();
+  if(url&&!url.startsWith('https://script.google.com/')){
+    toast('URL must start with https://script.google.com/');return;
+  }
+  config.gasUrl=url;
+  await setConfig('gasUrl',url);
+  document.getElementById('sync-btn').disabled=!url;
+  toast(url?'URL saved':'URL cleared');
+}
+
+async function clearGasUrl(){
+  document.getElementById('set-gas-url').value='';
+  config.gasUrl='';
+  await delConfig('gasUrl');
+  document.getElementById('sync-btn').disabled=true;
+  hideSyncStatus();
+  toast('URL cleared');
+}
+
+function updateSyncStatus(){
+  const el=document.getElementById('sync-status');
+  const txt=document.getElementById('sync-status-text');
+  if(!config.lastSync){el.style.display='none';return;}
+  el.style.display='flex';
+  const d=new Date(config.lastSync);
+  const rel=timeSince(d);
+  txt.textContent=`Last synced ${rel}`;
+  el.querySelector('.mi').textContent='check_circle';
+  el.querySelector('.mi').className='mi mi-xs sync-ok';
+}
+function hideSyncStatus(){document.getElementById('sync-status').style.display='none';}
+
+function timeSince(date){
+  const s=Math.floor((Date.now()-date)/1000);
+  if(s<60) return 'just now';
+  if(s<3600) return `${Math.floor(s/60)}m ago`;
+  if(s<86400) return `${Math.floor(s/3600)}h ago`;
+  return date.toLocaleDateString('en-MY',{day:'numeric',month:'short',hour:'2-digit',minute:'2-digit'});
+}
+
+// ══════════════════════════════════════════════════════
+// GOOGLE SHEETS SYNC
+// ══════════════════════════════════════════════════════
+async function syncToSheets(){
+  if(!config.gasUrl){toast('Set your GAS URL first');return;}
+  const btn=document.getElementById('sync-btn');
+  const btnText=document.getElementById('sync-btn-text');
+  btn.disabled=true;
+  btnText.textContent='Syncing…';
+  btn.querySelector('.mi').textContent='';
+  // Add spinner
+  const sp=document.createElement('span');sp.className='spinner';sp.style.cssText='width:16px;height:16px;border:2px solid rgba(255,255,255,.3);border-top-color:#fff;border-radius:50%;animation:spin .7s linear infinite;';
+  btn.prepend(sp);
+
+  try{
+    // Build payload grouped by company
+    const payload={};
+    const coKeys=Object.keys(COMPANIES);
+    coKeys.forEach(k=>{payload[k]={name:COMPANIES[k].name,tasks:[]};});
+
+    tasks.forEach(t=>{
+      const sub=t.subtasks||[];
+      const subDone=sub.filter(s=>s.done).length;
+      const subTotal=sub.length;
+      const progress=subTotal>0?Math.round(subDone/subTotal*100):(t.progress||0);
+      payload[t.company].tasks.push({
+        id:t.id,
+        title:t.title,
+        dept:t.dept,
+        project:t.project||'',
+        status:STATUS_LABELS[t.status]||t.status,
+        priority:PRIO_LABELS[t.priority]||t.priority,
+        deadline:t.deadline||'',
+        notes:t.notes||'',
+        tags:(t.tags||[]).join(', '),
+        subtasks:subTotal>0?`${subDone}/${subTotal}`:'—',
+        progress:progress+'%',
+        createdAt:t.createdAt?new Date(t.createdAt).toISOString().split('T')[0]:'',
+        updatedAt:t.updatedAt?new Date(t.updatedAt).toISOString().split('T')[0]:''
+      });
+    });
+
+    const resp=await fetch(config.gasUrl,{
+      method:'POST',
+      body:JSON.stringify(payload)
+    });
+
+    if(!resp.ok) throw new Error('Server returned '+resp.status);
+    config.lastSync=Date.now();
+    await setConfig('lastSync',config.lastSync);
+    updateSyncStatus();
+    toast(`Synced ${tasks.length} tasks to Sheets`);
+  }catch(err){
+    console.error('Sync error:',err);
+    const el=document.getElementById('sync-status');
+    const txt=document.getElementById('sync-status-text');
+    el.style.display='flex';
+    el.querySelector('.mi').textContent='error';
+    el.querySelector('.mi').className='mi mi-xs sync-err';
+    txt.textContent='Sync failed — check URL & network';
+    toast('Sync failed');
+  }finally{
+    btn.disabled=!config.gasUrl;
+    btnText.textContent='Sync to Google Sheets';
+    btn.querySelector('.mi').textContent='sync';
+    if(sp.parentNode)sp.remove();
+  }
+}
+
+// ══════════════════════════════════════════════════════
+// SEED DATA (first run only)
+// ══════════════════════════════════════════════════════
+const SEED=[
+  {id:'t001',title:'TikTok Admin Panel — Wipro',company:'rubii',dept:'Account Management',project:'Wipro Campaign',status:'overdue',priority:'d',deadline:'2026-03-20',notes:'Draft admin panel for TikTok data. Main use: upcoming Wipro session. Reusable by staff.',tags:['Wipro','Draft','TikTok'],createdAt:Date.now()-86400000*2,progress:20,subtasks:[
+    {id:'s001a',title:'Define data fields required',done:true},
+    {id:'s001b',title:'Design admin panel layout',done:false},
+    {id:'s001c',title:'Build filter + export function',done:false},
+    {id:'s001d',title:'Test with Wipro data set',done:false},
+    {id:'s001e',title:'Staff handover doc',done:false},
+  ]},
+  {id:'t002',title:'KOC Draft Review Tool — Wipro',company:'rubii',dept:'Creative',project:'Wipro Campaign',status:'overdue',priority:'d',deadline:'2026-03-20',notes:'Internal review tool for KOC content drafts. Mainly for Wipro session, reusable by staff.',tags:['Wipro','KOC'],createdAt:Date.now()-86400000*2,progress:10,subtasks:[
+    {id:'s002a',title:'Define review criteria',done:true},
+    {id:'s002b',title:'Build scoring template',done:false},
+    {id:'s002c',title:'Test with sample KOC drafts',done:false},
+  ]},
+  {id:'t003',title:'XHS Post Data Format — Wipro',company:'rubii',dept:'Creative',project:'Wipro Campaign',status:'overdue',priority:'w',deadline:'2026-03-19',notes:'XHS post format structure for Wipro campaign.',tags:['Wipro','XHS'],createdAt:Date.now()-86400000*3,progress:0,subtasks:[]},
+  {id:'t004',title:'Wipro Workflows (×2)',company:'rubii',dept:'Operations',project:'Wipro Campaign',status:'overdue',priority:'d',deadline:'2026-03-20',notes:'Two workflow drafts for Wipro session. Reusable templates.',tags:['Wipro','Workflow'],createdAt:Date.now()-86400000*2,progress:40,subtasks:[
+    {id:'s004a',title:'Workflow 1 — KOC briefing process',done:true},
+    {id:'s004b',title:'Workflow 2 — Content approval process',done:false},
+  ]},
+  {id:'t005',title:'Page Management Proposal — Wipro',company:'rubii',dept:'Account Management',project:'Wipro Campaign',status:'overdue',priority:'w',deadline:'2026-03-20',notes:'Page management proposal draft for Wipro.',tags:['Wipro','Proposal'],createdAt:Date.now()-86400000*2,progress:15,subtasks:[
+    {id:'s005a',title:'Scope services to include',done:false},
+    {id:'s005b',title:'Benchmark competitor pricing',done:false},
+    {id:'s005c',title:'Draft proposal doc',done:false},
+  ]},
+  {id:'t006',title:'AEON Mall Q3 Campaign Brief',company:'rubii',dept:'Account Management',project:'AEON Mall',status:'todo',priority:'d',deadline:'2026-03-25',notes:'Q3 campaign brief for AEON Mall client.',tags:['AEON','Q3'],createdAt:Date.now()-86400000,progress:0},
+  {id:'t007',title:'Social Media Proposal — AEON',company:'rubii',dept:'Account Management',project:'AEON Mall',status:'todo',priority:'w',deadline:'2026-03-26',notes:'Social media exposure and management proposal for AEON Mall.',tags:['AEON','Proposal'],createdAt:Date.now()-86400000,progress:0},
+  {id:'t008',title:'TikTok Price Package',company:'rubii',dept:'Account Management',project:'Wipro Campaign',status:'todo',priority:'w',deadline:'2026-03-28',notes:'TikTok pricing package for Wipro.',tags:['Wipro','Pricing'],createdAt:Date.now(),progress:30},
+  {id:'t009',title:'Unit Growth — BD Review (Jinni)',company:'conts',dept:'Leasing',project:'Revenue Sprint',status:'inprogress',priority:'d',deadline:'2026-03-28',notes:'Unit acquisition review with Jinni. Focus on increasing managed unit count.',tags:['Revenue','BD'],createdAt:Date.now()-86400000*5,progress:40},
+  {id:'t010',title:'William Revenue Handover',company:'conts',dept:'Operations',project:'Revenue Sprint',status:'inprogress',priority:'d',deadline:'2026-03-31',notes:'Yuan Min resigning. William taking over revenue ownership. Handover must complete by end of month.',tags:['Delegation','Revenue'],createdAt:Date.now()-86400000*4,progress:60},
+  {id:'t011',title:'GRR Contract Renegotiation',company:'conts',dept:'Finance',project:'Revenue Sprint',status:'todo',priority:'d',deadline:'2026-04-01',notes:'Renegotiate GRR contracts to improve management margin.',tags:['GRR','Finance'],createdAt:Date.now()-86400000*3,progress:10},
+  {id:'t012',title:'Headcount Review',company:'conts',dept:'Operations',project:'Revenue Sprint',status:'todo',priority:'w',deadline:'2026-04-07',notes:'Review headcount and identify cost savings.',tags:['HR'],createdAt:Date.now()-86400000*2,progress:0},
+  {id:'t013',title:'Finance Tracker Deployment',company:'dc',dept:'Finance',project:'Internal',status:'todo',priority:'w',deadline:'2026-03-28',notes:'Deploy Finance Tracker template to Dream Crafter.',tags:['Finance'],createdAt:Date.now()-86400000,progress:50},
+  {id:'t014',title:'Monthly P&L Review',company:'dc',dept:'Finance',project:'Internal',status:'inprogress',priority:'w',deadline:'2026-03-31',notes:'Monthly P&L review — RM400k+ MTD.',tags:['Finance','Review'],createdAt:Date.now()-86400000*2,progress:75},
+  {id:'t015',title:'Finance Tracker Deployment',company:'hookka',dept:'Finance',project:'Internal',status:'todo',priority:'g',deadline:'2026-04-07',notes:'Deploy Finance Tracker template to Hookka.',tags:['Finance'],createdAt:Date.now(),progress:0},
+  {id:'t016',title:'Production Cost Review',company:'hookka',dept:'Production',project:'Internal',status:'todo',priority:'w',deadline:'2026-04-15',notes:'Review production costs and margins.',tags:['Ops'],createdAt:Date.now(),progress:0},
+  {id:'t017',title:'Monitor GH China Proposal Feedback',company:'gh',dept:'Sales',project:'GH China Deal',status:'inprogress',priority:'w',deadline:'',notes:'Proposal sent to GH China. Awaiting feedback. No action until response received.',tags:['GH China','Proposal'],createdAt:Date.now()-86400000*3,progress:20},
+  {id:'t018',title:'Subscription Economics Q3 Review',company:'carres',dept:'Sales',project:'Subscription',status:'todo',priority:'g',deadline:'2026-07-01',notes:'Revisit subscription model economics. Keep direct sales on autopilot until then.',tags:['Paused','Q3'],createdAt:Date.now()-86400000*10,progress:0},
+  // Done tasks
+  {id:'d001',title:'Sales Sprint Plan v2',company:'conts',dept:'Operations',project:'Ops Build',status:'done',priority:'d',deadline:'2026-03-07',notes:'Completed. Layer 0–2 operational framework.',tags:['Done','Ops'],createdAt:Date.now()-86400000*14,progress:100},
+  {id:'d002',title:'Industry Peer Financial Brief v3',company:'conts',dept:'Finance',project:'Group Strategy',status:'done',priority:'d',deadline:'2026-03-10',notes:'Extracted from 6 Malaysian public company annual reports.',tags:['Done','Research'],createdAt:Date.now()-86400000*11,progress:100},
+  {id:'d003',title:'GH China Proposal — Draft & Send',company:'gh',dept:'Sales',project:'GH China Deal',status:'done',priority:'d',deadline:'2026-03-18',notes:'Proposal sent to GH China. Awaiting response.',tags:['Done','GH China'],createdAt:Date.now()-86400000*7,progress:100},
+  {id:'d004',title:'Finance Tracker GAS Deployer',company:'rubii',dept:'Finance',project:'Group Infra',status:'done',priority:'w',deadline:'2026-03-07',notes:'GAS deployer script for Finance Tracker across all 6 companies.',tags:['Done','Finance'],createdAt:Date.now()-86400000*14,progress:100},
+];
+
+// ══════════════════════════════════════════════════════
+// INIT
+// ══════════════════════════════════════════════════════
+async function init(){
+  try{
+    db=await openDB();
+    await loadConfig();
+    let existing=await getAllTasks();
+    if(existing.length===0){
+      // First run — seed data
+      for(const t of SEED) await putTask(t);
+      existing=await getAllTasks();
+    }
+    tasks=existing;
+    flagOverdue();
+    renderAll();
+  } catch(e){
+    console.error('DB error:',e);
+  }
+}
+
+function flagOverdue(){
+  const today=new Date(); today.setHours(0,0,0,0);
+  tasks.forEach(t=>{
+    if(t.deadline && t.status!=='done'){
+      const dl=new Date(t.deadline);
+      if(dl<today) t.status='overdue';
+    }
+  });
+}
+
+// ══════════════════════════════════════════════════════
+// HELPERS
+// ══════════════════════════════════════════════════════
+function fmtDate(iso){
+  if(!iso) return 'TBD';
+  const d=new Date(iso+'T00:00:00');
+  const months=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+  return d.getDate()+' '+months[d.getMonth()];
+}
+function fmtDateFull(iso){
+  if(!iso) return 'TBD';
+  const d=new Date(iso+'T00:00:00');
+  const months=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+  return d.getDate()+' '+months[d.getMonth()]+' '+d.getFullYear();
+}
+function daysUntil(iso){
+  if(!iso) return null;
+  const today=new Date(); today.setHours(0,0,0,0);
+  const dl=new Date(iso+'T00:00:00');
+  return Math.ceil((dl-today)/(1000*60*60*24));
+}
+function isThisWeek(iso){
+  if(!iso) return false;
+  const d=daysUntil(iso);
+  return d>=0 && d<=7;
+}
+function getUrgencyClass(task){
+  if(task.status==='overdue') return 'kp-d';
+  if(!task.deadline) return 'kp-m';
+  const d=daysUntil(task.deadline);
+  if(d<=3) return 'kp-d';
+  if(d<=7) return 'kp-w';
+  return 'kp-g';
+}
+function getUrgencyFoot(task){
+  if(task.status==='overdue') return {cls:'kd',label:'● Overdue'};
+  if(task.priority==='d') return {cls:'kd',label:'● High'};
+  if(task.priority==='w') return {cls:'kw',label:'● Med'};
+  return {cls:'kg',label:'● Low'};
+}
+function coKlass(co){
+  return 'kco-'+co;
+}
+function genId(){return 't'+Date.now().toString(36)+Math.random().toString(36).slice(2,6);}
+
+function toast(msg){
+  const el=document.getElementById('toast');
+  el.textContent=msg;
+  el.classList.add('show');
+  setTimeout(()=>el.classList.remove('show'),2200);
+}
+
+// ══════════════════════════════════════════════════════
+// RENDER — SUMMARY
+// ══════════════════════════════════════════════════════
+function renderSummary(){
+  document.getElementById('s-overdue').textContent=tasks.filter(t=>t.status==='overdue').length;
+  document.getElementById('s-week').textContent=tasks.filter(t=>t.status!=='done'&&isThisWeek(t.deadline)).length;
+  document.getElementById('s-prog').textContent=tasks.filter(t=>t.status==='inprogress').length;
+  document.getElementById('s-done').textContent=tasks.filter(t=>t.status==='done').length;
+}
+
+// ══════════════════════════════════════════════════════
+// RENDER — HOME (company cards)
+// ══════════════════════════════════════════════════════
+function renderHome(){
+  renderSummary();
+  const grid=document.getElementById('co-grid');
+  grid.innerHTML='';
+  const coOrder=['rubii','dc','conts','hookka','gh','carres'];
+  coOrder.forEach(coId=>{
+    const co=COMPANIES[coId];
+    const coTasks=tasks.filter(t=>t.company===coId&&t.status!=='done');
+    const overdue=coTasks.filter(t=>t.status==='overdue');
+    const nearest=coTasks.filter(t=>t.deadline).sort((a,b)=>a.deadline.localeCompare(b.deadline))[0];
+    const top3=coTasks.slice(0,3);
+
+    const taskRows=top3.length?top3.map(t=>{
+      const dot=t.status==='overdue'?'dot-d':isThisWeek(t.deadline)?'dot-w':'dot-ok';
+      const chkIcon=t.status==='done'?'check_circle':'radio_button_unchecked';
+      return `<div class="co-task-row">
+        <span class="mi mi-xs" style="color:${t.status==='done'?'var(--success)':t.status==='overdue'?'var(--danger)':'var(--t3)'};cursor:pointer;flex-shrink:0;" onclick="event.stopPropagation();quickToggle('${t.id}')">${chkIcon}</span>
+        <div class="co-task-name">${t.title}</div>
+      </div>`;
+    }).join(''):`<div class="co-task-row" style="color:var(--t3)">No open tasks</div>`;
+
+    const card=document.createElement('div');
+    card.className=`co-card ${co.urgency}`;
+    card.onclick=()=>openPopup(coId);
+    card.innerHTML=`
+      <div class="co-top"><span class="co-tag">${co.triage}</span><span class="co-menu"><span class="mi mi-sm">more_horiz</span></span></div>
+      <div class="co-name ${co.nameClass}">${co.name}</div>
+      <div class="co-meta">${co.label} · ${coTasks.length} open</div>
+      <div class="co-tasks">${taskRows}</div>
+      <div class="co-footer">
+        <span class="co-overdue ${overdue.length?'':'none'}">${overdue.length?overdue.length+' overdue':'—'}</span>
+        <span class="co-next">${nearest?fmtDate(nearest.deadline):'—'}</span>
+      </div>`;
+    grid.appendChild(card);
+  });
+}
+
+// ══════════════════════════════════════════════════════
+// SUBTASK HELPERS
+// ══════════════════════════════════════════════════════
+function subtaskProgress(t){
+  const subs=t.subtasks||[];
+  if(!subs.length) return t.progress||0;
+  const done=subs.filter(s=>s.done).length;
+  return Math.round(done/subs.length*100);
+}
+
+// ══════════════════════════════════════════════════════
+// RENDER — KANBAN
+// ══════════════════════════════════════════════════════
+function renderKanban(){
+  kanbanFilter=document.getElementById('k-co-filter')?.value||'';
+  const scroll=document.getElementById('k-scroll');
+  scroll.innerHTML='';
+  const cols=[
+    {id:'overdue',label:'Overdue',dot:'var(--danger)'},
+    {id:'todo',label:'To Do',dot:'var(--t3)'},
+    {id:'inprogress',label:'In Progress',dot:'var(--warn)'},
+    {id:'done',label:'Done',dot:'var(--success)'}
+  ];
+  cols.forEach(col=>{
+    let colTasks=tasks.filter(t=>t.status===col.id);
+    if(kanbanFilter) colTasks=colTasks.filter(t=>t.company===kanbanFilter);
+    const colEl=document.createElement('div');
+    colEl.className='k-col';
+    const cards=colTasks.length?colTasks.map(t=>{
+      const urg=getUrgencyClass(t);
+      const foot=getUrgencyFoot(t);
+      const co=COMPANIES[t.company];
+      const prog=subtaskProgress(t);
+      const subs=t.subtasks||[];
+      const subLabel=subs.length?`<span style="font-size:10px;color:var(--t3);margin-left:4px;">${subs.filter(s=>s.done).length}/${subs.length}</span>`:'';
+      return `<div class="k-card ${urg}" onclick="openDetail('${t.id}')">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px;">
+          <div class="k-co ${coKlass(t.company)}">${co?.name||t.company}</div>
+          <span class="mi mi-xs" style="color:${t.status==='done'?'var(--success)':'var(--t3)'};cursor:pointer;" onclick="event.stopPropagation();quickToggle('${t.id}')">${t.status==='done'?'check_circle':'radio_button_unchecked'}</span>
+        </div>
+        <div class="k-title">${t.title}${subLabel}</div>
+        <div class="k-foot">
+          <div class="k-urg ${foot.cls}">${foot.label}</div>
+          <div class="k-info">
+            ${t.project?`<div class="k-info-i"><span class="mi mi-xs" style="color:var(--t3)">folder_open</span><span>${t.project}</span></div>`:''}
+            ${t.deadline?`<div class="k-info-i"><span class="mi mi-xs" style="color:var(--t3)">event</span><span>${fmtDate(t.deadline)}</span></div>`:''}
+          </div>
+        </div>
+        <div class="k-prog"><div class="k-prog-fill" style="width:${prog}%"></div></div>
+      </div>`;
+    }).join(''):`<div style="font-size:12px;color:var(--t3);padding:8px 2px;">No tasks</div>`;
+
+    colEl.innerHTML=`
+      <div class="k-hdr"><div class="k-hdr-dot" style="background:${col.dot}"></div><div class="k-hdr-lbl">${col.label}</div><div class="k-hdr-n">${colTasks.length}</div></div>
+      ${cards}`;
+    scroll.appendChild(colEl);
+  });
+}
+
+// ══════════════════════════════════════════════════════
+// RENDER — DEADLINE
+// ══════════════════════════════════════════════════════
+function renderDeadline(){
+  renderToday();
+  renderUpcoming();
+}
+
+function renderToday(){
+  const overdue=tasks.filter(t=>t.status==='overdue');
+  const dueToday=tasks.filter(t=>t.status!=='done'&&t.deadline===new Date().toISOString().slice(0,10));
+  const all=[...overdue,...dueToday];
+  const el=document.getElementById('dl-today-view');
+  const now=new Date();
+  const dayStr=now.toLocaleDateString('en-MY',{weekday:'long',day:'numeric',month:'long',year:'numeric'});
+  const taskRows=all.length?all.map(t=>{
+    const co=COMPANIES[t.company];
+    const badge=t.status==='overdue'?'<span class="today-task-badge b-r">Overdue</span>':'<span class="today-task-badge b-a">Today</span>';
+    return `<div class="today-task" onclick="openDetail('${t.id}')">
+      <div class="today-check ${t.status==='done'?'done-chk':''}"><span class="mi mi-xs" style="color:#fff;display:${t.status==='done'?'flex':'none'}">check</span></div>
+      <div class="today-task-info">
+        <div class="today-task-title">${t.title}</div>
+        <div class="today-task-sub">${co?.name||t.company} · ${t.dept}</div>
+      </div>
+      ${badge}
+    </div>`;
+  }).join(''):`<div class="empty"><div class="empty-icon"><span class="mi" style="font-size:48px;opacity:.3">check_circle</span></div><div class="empty-title">All clear today</div><div class="empty-sub">No overdue or due-today tasks</div></div>`;
+
+  el.innerHTML=`
+    <div class="today-banner">
+      <div class="today-date">${dayStr}</div>
+      <div class="today-count">${overdue.length} overdue${dueToday.length?' · '+dueToday.length+' due today':''}</div>
+      <div class="today-sub">${tasks.filter(t=>t.status!=='done'&&isThisWeek(t.deadline)&&t.status!=='overdue').length} more due this week</div>
+    </div>
+    <div class="today-tasks">${taskRows}</div>`;
+}
+
+function renderUpcoming(){
+  const upcoming=tasks.filter(t=>t.status!=='done'&&t.deadline&&daysUntil(t.deadline)>=0)
+    .sort((a,b)=>a.deadline.localeCompare(b.deadline));
+  const el=document.getElementById('dl-upcoming-view');
+  if(!upcoming.length){
+    el.innerHTML=`<div class="empty"><div class="empty-title">No upcoming deadlines</div></div>`;
+    return;
+  }
+  const items=upcoming.map(t=>{
+    const d=new Date(t.deadline+'T00:00:00');
+    const days=daysUntil(t.deadline);
+    const mo=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'][d.getMonth()];
+    const badge=days===0?'<span class="dl-badge b-r">Today</span>':days<=3?`<span class="dl-badge b-r">${days}d</span>`:days<=7?`<span class="dl-badge b-a">${days}d</span>`:days<=14?`<span class="dl-badge b-b">${days}d</span>`:`<span class="dl-badge b-g">${days}d</span>`;
+    const co=COMPANIES[t.company];
+    return `<div class="dl-item" onclick="openDetail('${t.id}')">
+      <div class="dl-date-blk"><span class="dl-date-n ${t.status==='overdue'?'over':''}">${d.getDate()}</span><span class="dl-date-mo">${mo}</span></div>
+      <div class="dl-info"><div class="dl-task-name">${t.title}</div><div class="dl-task-sub">${co?.name||t.company} · ${t.dept}</div></div>
+      ${badge}
+    </div>`;
+  }).join('');
+  el.innerHTML=`<div class="sec">Upcoming</div><div class="dl-list">${items}</div>`;
+}
+
+// ══════════════════════════════════════════════════════
+// RENDER — WEEKLY
+// ══════════════════════════════════════════════════════
+function renderWeekly(){
+  const overdue=tasks.filter(t=>t.status==='overdue');
+  const week=tasks.filter(t=>t.status!=='done'&&isThisWeek(t.deadline));
+  const done=tasks.filter(t=>t.status==='done');
+  const total=tasks.length;
+  const pct=total?Math.round(done.length/total*100):0;
+
+  // Company load
+  const coLoad=Object.keys(COMPANIES).map(coId=>{
+    const coOpen=tasks.filter(t=>t.company===coId&&t.status!=='done').length;
+    return {coId,name:COMPANIES[coId].name,count:coOpen,clr:COMPANIES[coId].clr};
+  }).filter(c=>c.count>0).sort((a,b)=>b.count-a.count);
+  const maxLoad=coLoad[0]?.count||1;
+
+  const el=document.getElementById('weekly-content');
+  el.innerHTML=`
+  <div class="dash-row">
+    <div class="dash-card"><div class="dash-v c-s">${pct}%</div><div class="dash-l">Completion Rate</div></div>
+    <div class="dash-card"><div class="dash-v c-p">${done.length}</div><div class="dash-l">Tasks Done</div></div>
+    <div class="dash-card"><div class="dash-v c-d">${overdue.length}</div><div class="dash-l">Overdue</div></div>
+    <div class="dash-card"><div class="dash-v c-w">${week.length}</div><div class="dash-l">Due This Week</div></div>
+
+    <div class="dash-card full">
+      <div style="font-size:13px;font-weight:600;margin-bottom:12px;">Task Load by Company</div>
+      ${coLoad.map(c=>`
+        <div class="co-row-w">
+          <div class="co-row-name" style="color:${c.clr}">${c.name}</div>
+          <div class="co-row-bar-wrap"><div class="co-row-bar" style="width:${Math.round(c.count/maxLoad*100)}%;background:${c.clr}"></div></div>
+          <div class="co-row-pct">${c.count}</div>
+        </div>`).join('')}
+    </div>
+
+    ${overdue.length?`
+    <div class="dash-card full">
+      <div style="font-size:13px;font-weight:600;margin-bottom:12px;">Overdue Tasks</div>
+      ${overdue.map(t=>`
+        <div class="vel-row" onclick="openDetail('${t.id}')" style="cursor:pointer">
+          <div class="vel-label">${t.title}</div>
+          <div class="vel-val c-d">${t.deadline?daysUntil(t.deadline)+'d':'—'}</div>
+        </div>`).join('')}
+    </div>`:''}
+
+    <div class="dash-card full">
+      <div style="font-size:13px;font-weight:600;margin-bottom:12px;">✓ Completed</div>
+      ${done.length?done.slice(0,8).map(t=>`
+        <div class="vel-row">
+          <div class="vel-label" style="text-decoration:line-through">${t.title}</div>
+          <div class="vel-val c-s">${fmtDate(t.deadline)}</div>
+        </div>`).join(''):'<div style="font-size:13px;color:var(--t2)">No completed tasks yet</div>'}
+    </div>
+  </div>
+  <div style="height:16px;"></div>`;
+}
+
+// ══════════════════════════════════════════════════════
+// RENDER ALL
+// ══════════════════════════════════════════════════════
+function renderAll(){
+  renderHome();
+  renderKanban();
+  renderDeadline();
+  renderWeekly();
+  if(currentView==='tasks') renderTasksList();
+}
+
+// ══════════════════════════════════════════════════════
+// NAV
+// ══════════════════════════════════════════════════════
+function nav(v){
+  currentView=v;
+  document.querySelectorAll('.view').forEach(el=>el.classList.remove('on'));
+  document.getElementById('v-'+v).classList.add('on');
+  const titles={home:'Overview',kanban:'Kanban',tasks:'All Tasks',deadline:'Deadline',weekly:'This Week'};
+  document.getElementById('hdr-title').textContent=titles[v]||v;
+  const vOrder=['home','kanban','tasks','deadline','weekly'];
+  document.querySelectorAll('.seg-btn').forEach((b,i)=>b.classList.toggle('on',i===vOrder.indexOf(v)));
+  document.querySelectorAll('.bnav-item').forEach(n=>{
+    n.classList.remove('on');
+    n.querySelector('.bnav-lbl').style.color='';
+    const ic=n.querySelector('.bnav-icon');
+    if(ic) ic.style.color='';
+  });
+  const bn=document.getElementById('bn-'+v);
+  if(bn){
+    bn.classList.add('on');
+    bn.querySelector('.bnav-lbl').style.color='var(--p)';
+    const ic=bn.querySelector('.bnav-icon');
+    if(ic) ic.style.color='var(--p)';
+  }
+  if(v==='tasks') renderTasksList();
+  document.getElementById('scroll').scrollTop=0;
+}
+
+// ══════════════════════════════════════════════════════
+// DEADLINE TOGGLE
+// ══════════════════════════════════════════════════════
+function dlToggle(mode){
+  document.getElementById('dl-today-view').style.display=mode==='today'?'block':'none';
+  document.getElementById('dl-upcoming-view').style.display=mode==='upcoming'?'block':'none';
+  document.getElementById('dl-today-btn').classList.toggle('on',mode==='today');
+  document.getElementById('dl-upcoming-btn').classList.toggle('on',mode==='upcoming');
+}
+
+// ══════════════════════════════════════════════════════
+// TASKS TAB
+// ══════════════════════════════════════════════════════
+const tlState={co:'', bullet:'', dept:''};
+let bulkMode=false, selectedIds=new Set();
+let swipeState={id:null,startX:0,el:null};
+
+// Company dropdown change → rebuild dept chips + re-render
+function onCoChange(){
+  tlState.co=document.getElementById('tl-co-sel').value;
+  tlState.dept=''; // reset dept when company changes
+  buildDeptChips();
+  renderTasksList();
+}
+
+// Bullet toggle: All | Overdue | Urgent | In Progress
+function setBullet(el, val){
+  tlState.bullet=val;
+  document.querySelectorAll('.tl-bullet').forEach(b=>b.classList.remove('on'));
+  el.classList.add('on');
+  renderTasksList();
+}
+
+// Department chip
+function setDept(el, val){
+  tlState.dept=val;
+  document.querySelectorAll('.tl-dept-chip').forEach(c=>c.classList.remove('on'));
+  el.classList.add('on');
+  renderTasksList();
+}
+
+// Build dept chips based on selected company
+function buildDeptChips(){
+  const co=tlState.co;
+  const depts=co?DEPTS[co]:[];
+  const row=document.getElementById('tl-dept-row');
+  const all=`<div class="tl-dept-chip on" data-val="" onclick="setDept(this,'')">All Depts</div>`;
+  const chips=depts.map(d=>`<div class="tl-dept-chip" data-val="${d}" onclick="setDept(this,'${d}')">${d}</div>`).join('');
+  row.innerHTML=all+chips;
+}
+
+function clearSearch(){
+  document.getElementById('tl-search-inp').value='';
+  document.getElementById('tl-search-clear').style.display='none';
+  renderTasksList();
+}
+
+function renderTasksList(){
+  const q=(document.getElementById('tl-search-inp')?.value||'').toLowerCase().trim();
+  document.getElementById('tl-search-clear').style.display=q?'flex':'none';
+
+  let list=[...tasks];
+  if(tlState.co) list=list.filter(t=>t.company===tlState.co);
+  if(tlState.bullet==='overdue') list=list.filter(t=>t.status==='overdue');
+  else if(tlState.bullet==='urgent') list=list.filter(t=>t.priority==='d'&&t.status!=='done');
+  else if(tlState.bullet==='inprogress') list=list.filter(t=>t.status==='inprogress');
+  if(tlState.dept) list=list.filter(t=>t.dept===tlState.dept);
+  if(q) list=list.filter(t=>
+    t.title.toLowerCase().includes(q)||
+    (t.project||'').toLowerCase().includes(q)||
+    (t.dept||'').toLowerCase().includes(q)
+  );
+
+  // Sort within each dept: overdue → inprogress → todo → done, then deadline
+  const statusOrder={overdue:0,inprogress:1,todo:2,done:3};
+  list.sort((a,b)=>{
+    // Primary: dept alphabetical
+    const deptCmp=(a.dept||'').localeCompare(b.dept||'');
+    if(deptCmp!==0) return deptCmp;
+    // Secondary: status
+    const sd=(statusOrder[a.status]||2)-(statusOrder[b.status]||2);
+    if(sd!==0) return sd;
+    // Tertiary: deadline
+    if(!a.deadline&&!b.deadline) return 0;
+    if(!a.deadline) return 1; if(!b.deadline) return -1;
+    return a.deadline.localeCompare(b.deadline);
+  });
+
+  document.getElementById('tl-task-count').textContent=list.length+' task'+(list.length!==1?'s':'');
+
+  const el=document.getElementById('tl-list');
+  if(!list.length){
+    el.innerHTML=`<div class="empty"><div class="empty-title">No tasks found</div><div class="empty-sub">Try adjusting your filters</div></div>`;
+    return;
+  }
+
+  // Context: what's already visible in the UI above?
+  const coFiltered=!!tlState.co;       // company shown in dropdown → hide co label in rows
+  const deptFiltered=!!tlState.dept;   // single dept selected → no need for section headers or dept label
+
+  // Group by dept
+  const groups={};
+  list.forEach(t=>{
+    const key=t.dept||'Other';
+    if(!groups[key]) groups[key]=[];
+    groups[key].push(t);
+  });
+
+  const showSectionHeaders=!deptFiltered; // suppress headers when single dept selected
+
+  let html='';
+  Object.entries(groups).forEach(([dept, dTasks])=>{
+    if(showSectionHeaders){
+      html+=`<div class="tl-section-hdr">${dept}</div>`;
+    }
+    dTasks.forEach(t=>{
+      const co=COMPANIES[t.company];
+      const isDone=t.status==='done';
+      const dueCls=t.status==='overdue'?'over':isThisWeek(t.deadline)?'soon':'';
+      const pbar={d:'pb-d',w:'pb-w',g:'pb-g'}[t.priority]||'pb-g';
+      const subs=t.subtasks||[];
+      const subTxt=subs.length?` · ${subs.filter(s=>s.done).length}/${subs.length}`:'';
+      const selOn=selectedIds.has(t.id);
+
+      // Build meta row — suppress what's already contextually obvious
+      const showCo=!coFiltered;      // hide if company already selected in dropdown
+      const showDept=!showSectionHeaders; // hide if dept shown as section header
+
+      // Only show project if it adds info beyond dept
+      const showProj=t.project&&t.project!==t.dept;
+
+      const metaParts=[];
+      if(showCo) metaParts.push(`<span class="tl-row-co" style="color:${co?.clr||'var(--t2)'}">${co?.name||t.company}</span>`);
+      if(showDept&&!showProj) metaParts.push(`<span class="tl-row-dept">${t.dept}</span>`);
+      if(showProj) metaParts.push(`<span class="tl-row-dept">${t.project}${subTxt}</span>`);
+      else if(subs.length) metaParts.push(`<span class="tl-row-dept">${subTxt.replace(' · ','')}</span>`);
+      if(t.deadline) metaParts.push(`<span class="tl-row-due ${dueCls}">${fmtDate(t.deadline)}</span>`);
+
+      html+=`<div class="tl-row" id="tr-${t.id}" data-id="${t.id}" onclick="${bulkMode?`toggleBulkSel('${t.id}')`:`openDetail('${t.id}')`}">
+        <div class="tl-del-bg"><span class="mi" style="color:#fff">delete</span></div>
+        ${bulkMode
+          ?`<div class="tl-sel-chk ${selOn?'on':''}" onclick="event.stopPropagation();toggleBulkSel('${t.id}')">
+              <span class="mi mi-xs" style="color:#fff;display:${selOn?'flex':'none'}">check</span>
+            </div>`
+          :`<div class="tl-row-check ${isDone?'done-chk':''}" onclick="event.stopPropagation();quickToggle('${t.id}')">
+              <span class="mi mi-xs" style="color:#fff;display:${isDone?'flex':'none'}">check</span>
+            </div>`
+        }
+        <div class="tl-row-body">
+          <div class="tl-row-title ${isDone?'done-txt':''}">${t.title}</div>
+          ${metaParts.length?`<div class="tl-row-meta">${metaParts.join('')}</div>`:''}
+        </div>
+        <div class="tl-prio-bar ${pbar}"></div>
+      </div>`;
+    });
+  });
+
+  el.innerHTML=html;
+  if(!bulkMode) el.querySelectorAll('.tl-row').forEach(row=>attachSwipe(row));
+}
+
+// ── SWIPE TO DELETE ──
+function attachSwipe(row){
+  let startX=0, curX=0;
+  row.addEventListener('touchstart',e=>{startX=e.touches[0].clientX;},{passive:true});
+  row.addEventListener('touchmove',e=>{
+    curX=e.touches[0].clientX;
+    const dx=Math.max(startX-curX,0);
+    row.style.transform=dx>8?`translateX(-${Math.min(dx,90)}px)`:'';
+  },{passive:true});
+  row.addEventListener('touchend',async ()=>{
+    const dx=startX-curX;
+    if(dx>60){
+      const id=row.dataset.id;
+      row.style.transform='translateX(-90px)';
+      if(confirm('Delete this task?')){
+        await removeTask(id);
+        tasks=tasks.filter(t=>t.id!==id);
+        renderTasksList(); renderAll(); toast('Task deleted');
+      } else { row.style.transform=''; }
+    } else { row.style.transform=''; }
+  });
+}
+
+// ── BULK SELECT ──
+function enterBulk(){
+  bulkMode=true; selectedIds.clear();
+  document.getElementById('tl-bulk-bar').classList.add('on');
+  renderTasksList();
+}
+function exitBulk(){
+  bulkMode=false; selectedIds.clear();
+  document.getElementById('tl-bulk-bar').classList.remove('on');
+  renderTasksList();
+}
+function toggleBulkSel(id){
+  selectedIds.has(id)?selectedIds.delete(id):selectedIds.add(id);
+  document.getElementById('tl-bulk-count').textContent=selectedIds.size+' selected';
+  const row=document.getElementById('tr-'+id);
+  if(row){
+    const chk=row.querySelector('.tl-sel-chk');
+    if(chk){ chk.classList.toggle('on',selectedIds.has(id)); const ic=chk.querySelector('.mi'); if(ic) ic.style.display=selectedIds.has(id)?'flex':'none'; }
+  }
+}
+async function bulkDelete(){
+  if(!selectedIds.size) return;
+  if(!confirm(`Delete ${selectedIds.size} task${selectedIds.size>1?'s':''}?`)) return;
+  for(const id of selectedIds) await removeTask(id);
+  tasks=tasks.filter(t=>!selectedIds.has(t.id));
+  exitBulk(); renderAll(); toast(`${selectedIds.size} tasks deleted`);
+}
+async function bulkDone(){
+  if(!selectedIds.size) return;
+  for(const id of selectedIds){
+    const t=tasks.find(t=>t.id===id);
+    if(t){ t.status='done'; t.updatedAt=Date.now(); await putTask(t); }
+  }
+  exitBulk(); renderAll(); toast('Marked done ✓');
+}
+function openPopup(coId){
+  popupCo=coId;
+  const co=COMPANIES[coId];
+  const coTasks=tasks.filter(t=>t.company===coId);
+  const open=coTasks.filter(t=>t.status!=='done');
+  const el=document.getElementById('popup-name');
+  el.textContent=co.name;
+  el.style.color=co.clr;
+  document.getElementById('popup-meta').textContent=co.label+' · '+open.length+' open · '+coTasks.filter(t=>t.status==='done').length+' done';
+  document.getElementById('popup-tasks').innerHTML=coTasks.sort((a,b)=>{
+    const o={overdue:0,inprogress:1,todo:2,done:3};
+    return (o[a.status]||2)-(o[b.status]||2);
+  }).map(t=>{
+    const dueCls=t.status==='overdue'?'over':isThisWeek(t.deadline)?'soon':'';
+    const isDone=t.status==='done';
+    return `<div class="popup-task">
+      <div class="popup-check ${isDone?'done-chk':''}" onclick="event.stopPropagation();quickToggle('${t.id}').then(()=>openPopup('${coId}'))">
+        <span class="mi mi-xs" style="color:#fff;display:${isDone?'flex':'none'}">check</span>
+      </div>
+      <div class="popup-task-info" onclick="openDetail('${t.id}')">
+        <div class="popup-task-title" style="${isDone?'text-decoration:line-through;color:var(--t2)':''}">${t.title}</div>
+        <div class="popup-task-sub">${t.dept}${t.project?' · '+t.project:''}</div>
+      </div>
+      <div class="popup-task-due ${dueCls}" onclick="openDetail('${t.id}')">${fmtDate(t.deadline)}</div>
+    </div>`;
+  }).join('');
+  document.getElementById('popup-view-btn').onclick=()=>{closePopup();nav('kanban');};
+  document.getElementById('co-popup-ov').classList.add('on');
+}
+function closePopup(){document.getElementById('co-popup-ov').classList.remove('on');}
+
+// ══════════════════════════════════════════════════════
+// TASK DETAIL
+// ══════════════════════════════════════════════════════
+function openDetail(id){
+  detailId=id;
+  const t=tasks.find(t=>t.id===id);
+  if(!t) return;
+  const co=COMPANIES[t.company];
+  document.getElementById('det-tags').innerHTML=
+    `<span class="det-tag" style="color:${co?.clr}">${co?.name||t.company}</span><span class="det-tag">${t.dept}</span>`+
+    (t.tags||[]).map(tg=>`<span class="det-tag">${tg}</span>`).join('');
+  document.getElementById('det-title').textContent=t.title;
+  const sp=document.getElementById('det-status');
+  const scls={overdue:'sp-over',inprogress:'sp-prog',done:'sp-done',todo:'sp-todo'};
+  sp.className='status-pill '+(scls[t.status]||'sp-todo');
+  sp.textContent=STATUS_LABELS[t.status]||'To Do';
+  document.getElementById('det-sub').textContent=(co?.name||t.company)+' · '+t.dept+(t.project?' · '+t.project:'');
+  document.getElementById('det-notes').textContent=t.notes||'No notes.';
+  document.getElementById('det-dl').textContent=fmtDateFull(t.deadline);
+  document.getElementById('det-prio').textContent=PRIO_LABELS[t.priority]||'—';
+  document.getElementById('det-proj').textContent=t.project||'—';
+  renderSubtasks(t);
+  closePopup();
+  document.getElementById('det-ov').classList.add('on');
+}
+
+function renderSubtasks(t){
+  const subs=t.subtasks||[];
+  const done=subs.filter(s=>s.done).length;
+  const pct=subs.length?Math.round(done/subs.length*100):0;
+  const el=document.getElementById('det-subtasks');
+  el.innerHTML=`
+    <div class="sub-hdr">
+      <span>Subtasks</span>
+      <span class="sub-progress">${subs.length?done+'/'+subs.length+' · '+pct+'%':''}</span>
+    </div>
+    ${subs.length?`<div class="sub-prog-bar"><div class="sub-prog-fill" style="width:${pct}%"></div></div>`:''}
+    <div id="sub-list">
+      ${subs.map((s,i)=>`
+        <div class="sub-item">
+          <div class="sub-chk ${s.done?'done-chk':''}" onclick="toggleSubtask('${t.id}',${i})">
+            <span class="mi mi-xs" style="color:#fff;display:${s.done?'flex':'none'}">check</span>
+          </div>
+          <div class="sub-text ${s.done?'done-txt':''}">${s.title}</div>
+          <div class="sub-del" onclick="deleteSubtask('${t.id}',${i})"><span class="mi mi-xs">close</span></div>
+        </div>`).join('')}
+    </div>
+    <div class="sub-add-row">
+      <input class="sub-add-inp" id="sub-inp" type="text" placeholder="Add subtask…" onkeydown="if(event.key==='Enter')addSubtask('${t.id}')"/>
+      <button class="sub-add-btn" onclick="addSubtask('${t.id}')">Add</button>
+    </div>`;
+}
+
+function closeDet(){document.getElementById('det-ov').classList.remove('on');detailId=null;}
+
+// ══════════════════════════════════════════════════════
+// QUICK TOGGLE (inline checkbox)
+// ══════════════════════════════════════════════════════
+async function quickToggle(id){
+  const t=tasks.find(t=>t.id===id);
+  if(!t) return;
+  if(t.status==='done'){
+    // Reopen — check if has subtasks to determine status
+    const subs=t.subtasks||[];
+    t.status=subs.some(s=>s.done)?'inprogress':'todo';
+  } else {
+    t.status='done';
+  }
+  t.updatedAt=Date.now();
+  await putTask(t);
+  renderAll();
+  toast(t.status==='done'?'Marked done ✓':'Reopened');
+}
+
+// ══════════════════════════════════════════════════════
+// SUBTASK CRUD
+// ══════════════════════════════════════════════════════
+async function toggleSubtask(taskId, idx){
+  const t=tasks.find(t=>t.id===taskId);
+  if(!t) return;
+  t.subtasks=t.subtasks||[];
+  t.subtasks[idx].done=!t.subtasks[idx].done;
+  // Auto-update task status based on subtasks
+  const subs=t.subtasks;
+  if(subs.every(s=>s.done)) t.status='done';
+  else if(subs.some(s=>s.done)&&t.status==='done') t.status='inprogress';
+  t.updatedAt=Date.now();
+  await putTask(t);
+  renderSubtasks(t);
+  renderAll();
+}
+
+async function addSubtask(taskId){
+  const inp=document.getElementById('sub-inp');
+  const title=inp?.value.trim();
+  if(!title) return;
+  const t=tasks.find(t=>t.id===taskId);
+  if(!t) return;
+  t.subtasks=t.subtasks||[];
+  t.subtasks.push({id:genId(),title,done:false});
+  // Move to inprogress if was todo
+  if(t.status==='todo') t.status='inprogress';
+  t.updatedAt=Date.now();
+  await putTask(t);
+  inp.value='';
+  renderSubtasks(t);
+  renderAll();
+}
+
+async function deleteSubtask(taskId, idx){
+  const t=tasks.find(t=>t.id===taskId);
+  if(!t) return;
+  t.subtasks=t.subtasks||[];
+  t.subtasks.splice(idx,1);
+  t.updatedAt=Date.now();
+  await putTask(t);
+  renderSubtasks(t);
+  renderAll();
+}
+
+async function deleteTask(){
+  if(!detailId) return;
+  if(!confirm('Delete this task?')) return;
+  await removeTask(detailId);
+  tasks=tasks.filter(t=>t.id!==detailId);
+  closeDet();
+  renderAll();
+  toast('Task deleted');
+}
+
+function editTask(){
+  if(!detailId) return;
+  closeDet();
+  openForm(detailId);
+}
+
+// ══════════════════════════════════════════════════════
+// FORM — ADD / EDIT
+// ══════════════════════════════════════════════════════
+function openForm(id=null){
+  editingId=id;
+  const t=id?tasks.find(t=>t.id===id):null;
+  document.getElementById('form-title').textContent=id?'Edit Task':'New Task';
+  document.getElementById('f-title').value=t?.title||'';
+  document.getElementById('f-notes').value=t?.notes||'';
+  document.getElementById('f-co').value=t?.company||'';
+  updateDepts(t?.dept);
+  document.getElementById('f-proj').value=t?.project||'';
+  document.getElementById('f-deadline').value=t?.deadline||'';
+  document.getElementById('f-status').value=t?.status==='overdue'?'todo':(t?.status||'todo');
+  document.getElementById('f-tags').value=(t?.tags||[]).join(', ');
+  currentPrio=t?.priority||'d';
+  setPrio(currentPrio);
+  document.getElementById('form-ov').classList.add('on');
+  setTimeout(()=>document.getElementById('f-title').focus(),300);
+}
+function closeForm(){document.getElementById('form-ov').classList.remove('on');editingId=null;}
+
+function updateDepts(preselect=null){
+  const co=document.getElementById('f-co').value;
+  const sel=document.getElementById('f-dept');
+  sel.innerHTML=co?DEPTS[co].map(d=>`<option value="${d}" ${d===preselect?'selected':''}>${d}</option>`).join(''):'<option value="">Select company first</option>';
+}
+
+function setPrio(p){
+  currentPrio=p;
+  ['d','w','g'].forEach(x=>{
+    const el=document.getElementById('pp-'+x);
+    if(!el) return;
+    el.className='prio-pill'+(x===p?' sp-'+x:'');
+  });
+}
+
+async function saveTask(){
+  const title=document.getElementById('f-title').value.trim();
+  const co=document.getElementById('f-co').value;
+  const dept=document.getElementById('f-dept').value;
+  if(!title){toast('Title is required');return;}
+  if(!co){toast('Select a company');return;}
+  if(!dept){toast('Select a department');return;}
+
+  const deadline=document.getElementById('f-deadline').value;
+  let status=document.getElementById('f-status').value;
+  // Auto-flag overdue
+  if(deadline&&status!=='done'){
+    const today=new Date(); today.setHours(0,0,0,0);
+    if(new Date(deadline+'T00:00:00')<today) status='overdue';
+  }
+
+  const task={
+    id:editingId||genId(),
+    title,
+    company:co,
+    dept,
+    project:document.getElementById('f-proj').value.trim(),
+    deadline,
+    status,
+    priority:currentPrio,
+    notes:document.getElementById('f-notes').value.trim(),
+    tags:document.getElementById('f-tags').value.split(',').map(t=>t.trim()).filter(Boolean),
+    createdAt:editingId?(tasks.find(t=>t.id===editingId)?.createdAt||Date.now()):Date.now(),
+    progress:editingId?(tasks.find(t=>t.id===editingId)?.progress||0):0,
+    updatedAt:Date.now()
+  };
+
+  await putTask(task);
+  if(editingId){
+    tasks=tasks.map(t=>t.id===editingId?task:t);
+  } else {
+    tasks.push(task);
+  }
+  closeForm();
+  renderAll();
+  toast(editingId?'Task updated':'Task added');
+}
+
+// ══════════════════════════════════════════════════════
+// SERVICE WORKER (external)
+// ══════════════════════════════════════════════════════
+if('serviceWorker' in navigator){
+  navigator.serviceWorker.register('./sw.js').catch(()=>{});
+}
+
+// ══════════════════════════════════════════════════════
+// BOOT
+// ══════════════════════════════════════════════════════
+init();
+</script>
+</body>
+</html>
